@@ -1,0 +1,9 @@
+﻿hex
+pca10040
+pca10056/s140/arm5_no_packs
+pca10056/s140/armgcc
+pca10056/s140/iar
+pca10100
+pca10100e
+*.eww
+*.jlink

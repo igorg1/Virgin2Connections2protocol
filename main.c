@@ -70,10 +70,19 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
-/* LibUARTE section begin */
-NRF_LIBUARTE_ASYNC_DEFINE (libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED, NRF_LIBUARTE_PERIPHERAL_NOT_USED, 255, 3); // UARTE0 is Siam
-NRF_LIBUARTE_ASYNC_DEFINE (libuarte1, 1, 2, NRF_LIBUARTE_PERIPHERAL_NOT_USED, NRF_LIBUARTE_PERIPHERAL_NOT_USED, 255, 3); // UARTE1 is MB
+const uint8_t siamID[2] = { 0x0D, 0x0A };
+uint8_t modem1Str[12] = { 0x0d, 0x0a, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
+  0x00, 0x90, 0x67 }; // 0d0a01010000000002009067
+uint8_t modem1StrMB[8] = { 0x7F, 0x03, 0x00, 0x00, 0x00, 0x01, 0x8E,
+  0x14 }; // 7F03000000018E14
+uint8_t modem2Str[12] = { 0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
+  0x00, 0x16, 0xCF }; // 0d0a7F0100000000020016CF
 
+/* LibUARTE section begin */
+NRF_LIBUARTE_ASYNC_DEFINE (libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
+    NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE0 is Siam
+NRF_LIBUARTE_ASYNC_DEFINE (libuarte1, 1, 2, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
+    NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE1 is MB
 
 static volatile bool m_loopback_phase0; // Siam
 static volatile bool m_loopback_phase1; // MB
@@ -87,49 +96,142 @@ typedef struct
 NRF_QUEUE_DEF (buffer_t, m_buf_queue0, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // Siam
 NRF_QUEUE_DEF (buffer_t, m_buf_queue1, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // MB
 
+/* LibUARTE section end */
+
+#define APP_BLE_CONN_CFG_TAG                                                  \
+  1 /**< Tag that refers to the BLE stack configuration set with @ref         \
+       sd_ble_cfg_set. The default tag is @ref BLE_CONN_CFG_TAG_DEFAULT. */
+#define APP_BLE_OBSERVER_PRIO                                                 \
+  3 /**< BLE observer priority of the application. There is no need to modify \
+       this value. */
+
+//#define UART_TX_BUF_SIZE 256 /**< UART TX buffer size. */
+//#define UART_RX_BUF_SIZE 256 /**< UART RX buffer size. */
+
+#define NUS_SERVICE_UUID_TYPE                                                 \
+  BLE_UUID_TYPE_VENDOR_BEGIN /**< UUID type for the Nordic UART Service       \
+                                (vendor specific). */
+
+#define ECHOBACK_BLE_UART_DATA                                                \
+  0 /**< Echo the UART data that is received over the Nordic UART Service     \
+       (NUS) back to the sender. */
+#define SCAN_DURATION_WHITELIST                                               \
+  1000 /**< Duration of the scanning in units of 10 milliseconds. */
+#define BLE_GAP_SCAN_BUFFER_EXTENDED_MIN (255)
+#define NRF_BLE_SCAN_ACTIVE_SCANNING                                          \
+  1 /**< 0 -- passive scanning, 1 -- active scanning. */
+BLE_NUS_C_ARRAY_DEF_SIAM (m_ble_nus_c_SIAM,
+    NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
+                                   (NUS) client instances. */
+
+BLE_NUS_C_ARRAY_DEF_MB (m_ble_nus_c_MB,
+    NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
+                                     (NUS) client instances. */
+
+NRF_BLE_GATT_DEF (m_gatt);        /**< GATT module instance. */
+BLE_DB_DISCOVERY_DEF (m_db_disc); /**< Database discovery module instance. */
+NRF_BLE_SCAN_DEF (m_scan);        /**< Scanning Module instance. */
+NRF_BLE_GQ_DEF (m_ble_gatt_queue, /**< BLE GATT Queue instance. */
+    NRF_SDH_BLE_CENTRAL_LINK_COUNT, NRF_BLE_GQ_QUEUE_SIZE);
+
+static uint16_t m_ble_nus_max_data_len =
+    BLE_GATT_ATT_MTU_DEFAULT - OPCODE_LENGTH -
+    HANDLE_LENGTH; /**< Maximum length of data (in bytes) that can be
+                      transmitted to the peer by the Nordic UART service
+                      module. */
+
+/**@brief NUS UUID. */
+static ble_uuid_t const m_nus_uuid = { .uuid = BLE_UUID_NUS_SERVICE,
+  .type = NUS_SERVICE_UUID_TYPE };
+
+static ble_uuid_t const m_nus_uuid_MB = { .uuid = BLE_UUID_NUS_SERVICE_MB,
+  .type = NUS_SERVICE_UUID_TYPE };
+
+#define BLE_UUID_NUS2_SERVICE 0xFFFF // 0x1101
+static ble_uuid_t const m_nus2_uuid = { .uuid = BLE_UUID_NUS2_SERVICE,
+  .type = 0xFF }; // 0x16
+
+/**< Scan parameters requested for scanning and connection. */
+static ble_gap_scan_params_t m_scan_param = {
+  .active = NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
+  .interval = NRF_BLE_SCAN_SCAN_INTERVAL,
+  .window = NRF_BLE_SCAN_SCAN_WINDOW,
+  .filter_policy = BLE_GAP_SCAN_FP_ACCEPT_ALL,
+  .timeout = SCAN_DURATION_WHITELIST,
+  .scan_phys = BLE_GAP_PHY_1MBPS,
+  // .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
+  //.report_incomplete_evts = 1,
+  //.extended = 1,
+};
+
 void
 uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
 {
   nrf_libuarte_async_t *p_libuarte = (nrf_libuarte_async_t *)context;
   ret_code_t ret;
+  uint32_t ret_val;
+  buffer_t buf;
 
   switch (p_evt->type)
     {
     case NRF_LIBUARTE_ASYNC_EVT_ERROR:
       break;
     case NRF_LIBUARTE_ASYNC_EVT_RX_DATA:
-      ret = nrf_libuarte_async_tx (
-          p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-      if (ret == NRF_ERROR_BUSY)
-        {
-          buffer_t buf = {
-            .p_data = p_evt->data.rxtx.p_data,
-            .length = p_evt->data.rxtx.length,
-          };
-
+    if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
+    {
+        ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+                }
+    else
+    {
+        ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+    }
+     // ret = nrf_libuarte_async_tx (
+     //     p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+     // if (ret_val == NRF_ERROR_BUSY)//ret
+      //  {
+      //    buffer_t buf = {
+      //     .p_data = p_evt->data.rxtx.p_data,
+     //      .length = p_evt->data.rxtx.length,
+      //    };
+          
+        buf.p_data = p_evt->data.rxtx.p_data;
+        buf.length = p_evt->data.rxtx.length;
           ret = nrf_queue_push (&m_buf_queue0, &buf);
           APP_ERROR_CHECK (ret);
-        }
-      else
-        {
-          APP_ERROR_CHECK (ret);
-        }
-   
+      // }
+    //  else
+     //   {
+    //      APP_ERROR_CHECK (ret_val);
+    //    }
+
       m_loopback_phase0 = true;
       break;
     case NRF_LIBUARTE_ASYNC_EVT_TX_DONE:
+   // if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
+   // {
+   //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+   //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+   //             }
+   // else
+   // {
+   //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+   //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+   // }
       if (m_loopback_phase0)
         {
-          nrf_libuarte_async_rx_free (
-              p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-          if (!nrf_queue_is_empty (&m_buf_queue0))
-            {
-              buffer_t buf;
-              ret = nrf_queue_pop (&m_buf_queue0, &buf);
-              APP_ERROR_CHECK (ret);
-              UNUSED_RETURN_VALUE (
-                  nrf_libuarte_async_tx (p_libuarte, buf.p_data, buf.length));
-            }
+        m_loopback_phase0=false;
+        nrf_libuarte_async_rx_free (
+            p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+        if (!nrf_queue_is_empty (&m_buf_queue0))
+          {
+            buffer_t buf;
+            ret = nrf_queue_pop (&m_buf_queue0, &buf);
+            APP_ERROR_CHECK (ret);
+           // UNUSED_RETURN_VALUE (
+           //     nrf_libuarte_async_tx (p_libuarte, buf.p_data, buf.length));
+          }
         }
       break;
     default:
@@ -185,73 +287,6 @@ uart_event_handler1 (void *context, nrf_libuarte_async_evt_t *p_evt) // MB
       break;
     }
 }
-/* LibUARTE section end */
-
-#define APP_BLE_CONN_CFG_TAG                                                  \
-  1 /**< Tag that refers to the BLE stack configuration set with @ref         \
-       sd_ble_cfg_set. The default tag is @ref BLE_CONN_CFG_TAG_DEFAULT. */
-#define APP_BLE_OBSERVER_PRIO                                                 \
-  3 /**< BLE observer priority of the application. There is no need to modify \
-       this value. */
-
-#define UART_TX_BUF_SIZE 256 /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE 256 /**< UART RX buffer size. */
-
-#define NUS_SERVICE_UUID_TYPE                                                 \
-  BLE_UUID_TYPE_VENDOR_BEGIN /**< UUID type for the Nordic UART Service       \
-                                (vendor specific). */
-
-#define ECHOBACK_BLE_UART_DATA                                                \
-  0 /**< Echo the UART data that is received over the Nordic UART Service     \
-       (NUS) back to the sender. */
-#define SCAN_DURATION_WHITELIST                                               \
-  1000 /**< Duration of the scanning in units of 10 milliseconds. */
-#define BLE_GAP_SCAN_BUFFER_EXTENDED_MIN (255)
-#define NRF_BLE_SCAN_ACTIVE_SCANNING                                          \
-  1 /**< 0 -- passive scanning, 1 -- active scanning. */
-BLE_NUS_C_ARRAY_DEF_SIAM (m_ble_nus_c_SIAM,
-    NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
-                                   (NUS) client instances. */
-
-BLE_NUS_C_ARRAY_DEF_MB (m_ble_nus_c_MB,
-    NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
-                                     (NUS) client instances. */
-
-NRF_BLE_GATT_DEF (m_gatt);        /**< GATT module instance. */
-BLE_DB_DISCOVERY_DEF (m_db_disc); /**< Database discovery module instance. */
-NRF_BLE_SCAN_DEF (m_scan);        /**< Scanning Module instance. */
-NRF_BLE_GQ_DEF (m_ble_gatt_queue, /**< BLE GATT Queue instance. */
-    NRF_SDH_BLE_CENTRAL_LINK_COUNT, NRF_BLE_GQ_QUEUE_SIZE);
-
-static uint16_t m_ble_nus_max_data_len =
-    BLE_GATT_ATT_MTU_DEFAULT - OPCODE_LENGTH -
-    HANDLE_LENGTH; /**< Maximum length of data (in bytes) that can be
-                      transmitted to the peer by the Nordic UART service
-                      module. */
-
-/**@brief NUS UUID. */
-static ble_uuid_t const m_nus_uuid = { .uuid = BLE_UUID_NUS_SERVICE,
-  .type = NUS_SERVICE_UUID_TYPE };
-
-static ble_uuid_t const m_nus_uuid_MB = { .uuid = BLE_UUID_NUS_SERVICE_MB,
-  .type = NUS_SERVICE_UUID_TYPE };
-
-#define BLE_UUID_NUS2_SERVICE 0xFFFF // 0x1101
-static ble_uuid_t const m_nus2_uuid = { .uuid = BLE_UUID_NUS2_SERVICE,
-  .type = 0xFF }; // 0x16
-
-/**< Scan parameters requested for scanning and connection. */
-static ble_gap_scan_params_t m_scan_param = {
-  .active = NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
-  .interval = NRF_BLE_SCAN_SCAN_INTERVAL,
-  .window = NRF_BLE_SCAN_SCAN_WINDOW,
-  .filter_policy = BLE_GAP_SCAN_FP_ACCEPT_ALL,
-  .timeout = SCAN_DURATION_WHITELIST,
-  .scan_phys = BLE_GAP_PHY_1MBPS,
- // .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
-  //.report_incomplete_evts = 1,
-  //.extended = 1,
-};
 
 static uint8_t scan_buffer_data[BLE_GAP_SCAN_BUFFER_EXTENDED_MIN];
 static ble_data_t scan_buffer = { scan_buffer_data,
@@ -305,8 +340,8 @@ scan_start (void)
 
   NRF_LOG_INFO ("Starting scan.");
 
-//  ret = bsp_indication_set (BSP_INDICATE_SCANNING);
-//  APP_ERROR_CHECK (ret);
+  //  ret = bsp_indication_set (BSP_INDICATE_SCANNING);
+  //  APP_ERROR_CHECK (ret);
 
   ret = bsp_indication_set (BSP_INDICATE_SCANNING);
   APP_ERROR_CHECK (ret);
@@ -387,62 +422,68 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
                 memset (&scanMy[i], 0, sizeof (scanMy[0]));
               }
           }
-          
-          printf ("Connecting to target %02x%02x%02x%02x%02x%02x\r\n",
+
+        printf ("Connecting to target %02x%02x%02x%02x%02x%02x\r\n",
             temp[0].peer_addr.addr[0], temp[0].peer_addr.addr[1],
             temp[0].peer_addr.addr[2], temp[0].peer_addr.addr[3],
             temp[0].peer_addr.addr[4], temp[0].peer_addr.addr[5]);
-            printf (temp[0].data);
-            printf ("\r\n");
-          printf("is %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\r\n",
-                  temp[0].data[0],temp[0].data[1],temp[0].data[2],temp[0].data[3],temp[0].data[4],temp[0].data[5],
-                  temp[0].data[6],temp[0].data[7],temp[0].data[8],temp[0].data[9],temp[0].data[10],temp[0].data[11],
-                  temp[0].data[12],temp[0].data[13],temp[0].data[14],temp[0].data[15],temp[0].data[16],temp[0].data[17]);
-          printf ("\r\n\r\n");
-        memmove (type024Cmp, temp[0].data + 16, 21);
-        memmove (type016Cmp, temp[0].data + 4, 13);
-        memmove (type07Cmp, temp[0].data + 16, 17);//20
-//        printf("type07 is %02x%02x%02x%02x%02x%02x\r\n",type07Cmp[0],type07Cmp[1],type07Cmp[2],type07Cmp[3],type07Cmp[4],type07Cmp[5]);
-        if ((false == memcmp (type024Cmp, type024, 21)) ||
-            (false == memcmp (type016Cmp, type016, 13)) ||
-            (false == memcmp (type07Cmp, type07, 16)))//17
-          {
-            // For name
-            if ((false == memcmp (type024Cmp, type024, 21)))
-              {
-                memmove (temp[0].name, temp[0].data + 3, 10);
-              }
-            else if ((false == memcmp (type016Cmp, type016, 13)))
-              {
-                memmove (temp[0].name, temp[0].data + 19, 12);
-              }
-            else if ((false == memcmp (type07Cmp, type07, 17)))
-              {
-                memmove (temp[0].name, temp[0].data + 15, 17);
-              }
+        printf (temp[0].data);
+        printf ("\r\n");
+        printf ("is "
+                "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%"
+                "02x%02x%02x\r\n",
+            temp[0].data[0], temp[0].data[1], temp[0].data[2], temp[0].data[3],
+            temp[0].data[4], temp[0].data[5], temp[0].data[6], temp[0].data[7],
+            temp[0].data[8], temp[0].data[9], temp[0].data[10],
+            temp[0].data[11], temp[0].data[12], temp[0].data[13],
+            temp[0].data[14], temp[0].data[15], temp[0].data[16],
+            temp[0].data[17]);
+        printf ("\r\n\r\n");
+        // memmove (type024Cmp, temp[0].data + 16, 21);
+        // memmove (type016Cmp, temp[0].data + 4, 13);
+        //  memmove (type07Cmp, temp[0].data + 16, 17);//20
+        //        printf("type07 is
+        //        %02x%02x%02x%02x%02x%02x\r\n",type07Cmp[0],type07Cmp[1],type07Cmp[2],type07Cmp[3],type07Cmp[4],type07Cmp[5]);
+        //   if ((false == memcmp (type024Cmp, type024, 21)) ||
+        //       (false == memcmp (type016Cmp, type016, 13)) ||
+        //       (false == memcmp (type07Cmp, type07, 16)))//17
+        //     {
+        // For name
+        // if ((false == memcmp (type024Cmp, type024, 21)))
+        //    {
+        //      memmove (temp[0].name, temp[0].data + 3, 10);
+        //     }
+        //   else if ((false == memcmp (type016Cmp, type016, 13)))
+        //     {
+        //       memmove (temp[0].name, temp[0].data + 19, 12);
+        //     }
+        //    else if ((false == memcmp (type07Cmp, type07, 17)))
+        //      {
+        //        memmove (temp[0].name, temp[0].data + 15, 17);
+        //      }
 
-            if (cntConnect == 0)
+        if (cntConnect == 0)
+          {
+            memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
+            cntConnect++;
+          }
+        else
+          {
+            memmove (Scanned, &temp[0].peer_addr.addr, 6);
+            findMatch = false;
+            for (int j = 0; j < cntConnect; j++)
               {
-                memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
+                memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
+                if (false == memcmp (Scanned, writeScanMy, 6))
+                  findMatch = true;
+              }
+            if (!findMatch)
+              {
+                memcpy (&scanMy[cntConnect], temp, sizeof (temp));
                 cntConnect++;
               }
-            else
-              {
-                memmove (Scanned, &temp[0].peer_addr.addr, 6);
-                findMatch = false;
-                for (int j = 0; j < cntConnect; j++)
-                  {
-                    memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
-                    if (false == memcmp (Scanned, writeScanMy, 6))
-                      findMatch = true;
-                  }
-                if (!findMatch)
-                  {
-                    memcpy (&scanMy[cntConnect], temp, sizeof (temp));
-                    cntConnect++;
-                  }
-              }
           }
+        //  }
       }
       break;
 
@@ -512,14 +553,13 @@ scan_init (void)
 static void
 db_disc_handler (ble_db_discovery_evt_t *p_evt)
 {
-  
-  NRF_LOG_INFO("uuid 0x%x", p_evt->params.discovered_db.srv_uuid.uuid);
+
+  NRF_LOG_INFO ("uuid 0x%x; type %x",
+      p_evt->params.discovered_db.srv_uuid.uuid,
+      p_evt->params.discovered_db.srv_uuid.type);
   ble_nus_c_on_db_disc_evt_SIAM (&m_ble_nus_c_SIAM[p_evt->conn_handle], p_evt);
   ble_nus_c_on_db_disc_evt_MB (&m_ble_nus_c_MB[p_evt->conn_handle], p_evt);
 }
-
-
-
 
 /**@brief Callback handling Nordic UART Service (NUS) client events.
  *
@@ -541,7 +581,8 @@ ble_nus_c_evt_handler (
   switch (p_ble_nus_evt->evt_type)
     {
     case BLE_NUS_C_EVT_DISCOVERY_COMPLETE:
-      NRF_LOG_INFO ("Discovery complete.");
+      NRF_LOG_INFO ("Discovery complete. TX type %x",
+          p_ble_nus_c->handles.nus_tx_handle);
       err_code = ble_nus_c_handles_assign (
           p_ble_nus_c, p_ble_nus_evt->conn_handle, &p_ble_nus_evt->handles);
       APP_ERROR_CHECK (err_code);
@@ -555,10 +596,12 @@ ble_nus_c_evt_handler (
 
     case BLE_NUS_C_EVT_NUS_TX_EVT:
       NRF_LOG_INFO ("Receive N \t%x\r\n", p_ble_nus_c->conn_handle);
-    //  ble_nus_chars_received_uart_print_SIAM (
-    //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
-    //    ble_nus_chars_received_uart_print_MB (
-    //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+      err_code = nrf_libuarte_async_tx (
+          &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+      //  ble_nus_chars_received_uart_print_SIAM (
+      //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+      //    ble_nus_chars_received_uart_print_MB (
+      //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
       break;
 
     case BLE_NUS_C_EVT_DISCONNECTED:
@@ -693,13 +736,14 @@ ble_evt_handler (ble_evt_t const *p_ble_evt, void *p_context)
       APP_ERROR_CHECK (err_code);
       break;
 
-  //  case BLE_GATTS_EVT_TIMEOUT:
+      //  case BLE_GATTS_EVT_TIMEOUT:
       // Disconnect on GATT Server timeout event.
- //     NRF_LOG_DEBUG ("GATT Server Timeout.");
- //     err_code = sd_ble_gap_disconnect (p_ble_evt->evt.gatts_evt.conn_handle,
-//          BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
- //     APP_ERROR_CHECK (err_code);
- //     break;
+      //     NRF_LOG_DEBUG ("GATT Server Timeout.");
+      //     err_code = sd_ble_gap_disconnect
+      //     (p_ble_evt->evt.gatts_evt.conn_handle,
+      //          BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+      //     APP_ERROR_CHECK (err_code);
+      //     break;
 
     default:
       break;
@@ -775,13 +819,8 @@ bsp_event_handler (bsp_event_t event)
   const uint8_t modem1[6] = { 0x7C, 0x60, 0x72, 0x8C, 0xAD, 0xF6 };
   const uint8_t modem2[6] = { 0x77, 0x8C, 0xF7, 0xDC, 0x0B, 0xEF };
   const uint8_t modem3[6] = { 0x28, 0xEC, 0xCB, 0xAB, 0xEA, 0xE9 };
-  const uint8_t modemDDIM2[6]={0x12,0x02,0x72,0xA4,0x16,0x00};
-  uint8_t modem1Str[12] = { 0x0d, 0x0a, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
-    0x02, 0x00, 0x90, 0x67 }; // 0d0a01010000000002009067
-  uint8_t modem1StrMB[8] = { 0x7F, 0x03, 0x00, 0x00, 0x00, 0x01, 0x8E,
-    0x14 }; // 7F03000000018E14
-  uint8_t modem2Str[12] = { 0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00,
-    0x02, 0x00, 0x16, 0xCF }; // 0d0a7F0100000000020016CF
+  const uint8_t modemDDIM2[6] = { 0x12, 0x02, 0x72, 0xA4, 0x16, 0x00 };
+
   switch (event)
     {
       //    case BSP_EVENT_SLEEP:
@@ -856,13 +895,13 @@ bsp_event_handler (bsp_event_t event)
       break;
     case BSP_EVENT_KEY_3:
       {
-       
+
         NRF_LOG_INFO ("BSP_EVENT_KEY_3");
-        
+
         for (int i = 0; i < cntConnect; i++)
           {
-            if (false ==
-                memcmp (scanMy[i].peer_addr.addr, modemDDIM2, 6)) // modemDDIM180
+            if (false == memcmp (scanMy[i].peer_addr.addr, modemDDIM2,
+                             6)) // modemDDIM180
               {
                 NRF_LOG_HEXDUMP_INFO (scanMy[i].peer_addr.addr, 6);
                 err_code = sd_ble_gap_connect (&scanMy[i].peer_addr,
@@ -871,21 +910,23 @@ bsp_event_handler (bsp_event_t event)
                 APP_ERROR_CHECK (err_code);
               }
           }
-       // do
-      //    {
-      //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0], modem1StrMB,
-      //          8); // ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str,
-                    // 12);
-      //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
-      //          (ret_val != NRF_ERROR_INVALID_STATE))
-      //        {
-      //          NRF_LOG_ERROR (
-      //              "Failed sending NUS message. Error 0x%x. ", ret_val);
-      //          APP_ERROR_CHECK (ret_val);
-              }
+        // do
+        //    {
+        //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+        //      modem1StrMB,
+        //          8); // ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+        //          modem2Str,
+        // 12);
+        //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
+        //          (ret_val != NRF_ERROR_INVALID_STATE))
+        //        {
+        //          NRF_LOG_ERROR (
+        //              "Failed sending NUS message. Error 0x%x. ", ret_val);
+        //          APP_ERROR_CHECK (ret_val);
+      }
       //    }
       //  while (ret_val == NRF_ERROR_BUSY);
-     // }
+      // }
 
       break;
 
@@ -895,7 +936,6 @@ bsp_event_handler (bsp_event_t event)
 }
 
 /**@brief Function for initializing the UART. */
-
 
 /**@brief Function for initializing the Nordic UART Service (NUS) client. */
 static void
@@ -999,16 +1039,16 @@ main (void)
   ret_code_t err_code;
   // Initialize.
   log_init ();
-  nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { 
-    .tx_pin = TX_PIN_NUMBER,
+  nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =
+                                                                 TX_PIN_NUMBER,
     .rx_pin = RX_PIN_NUMBER,
     .baudrate = NRF_UARTE_BAUDRATE_115200,
     .parity = NRF_UARTE_PARITY_EXCLUDED,
     .hwfc = NRF_UARTE_HWFC_DISABLED,
     .timeout_us = 1000,
     .int_prio = 5 };
-  nrf_libuarte_async_config_t nrf_libuarte_async_config1 = { 
-    .tx_pin = ARDUINO_0_PIN,
+  nrf_libuarte_async_config_t nrf_libuarte_async_config1 = { .tx_pin =
+                                                                 ARDUINO_0_PIN,
     .rx_pin = ARDUINO_1_PIN,
     .baudrate = NRF_UARTE_BAUDRATE_115200,
     .parity = NRF_UARTE_PARITY_EXCLUDED,

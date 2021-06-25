@@ -177,61 +177,62 @@ uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
     case NRF_LIBUARTE_ASYNC_EVT_ERROR:
       break;
     case NRF_LIBUARTE_ASYNC_EVT_RX_DATA:
-    if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
-    {
-        ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
-            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-                }
-    else
-    {
-        ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
-            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-    }
-     // ret = nrf_libuarte_async_tx (
-     //     p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-     // if (ret_val == NRF_ERROR_BUSY)//ret
+      if (false == memcmp (p_evt->data.rxtx.p_data, siamID, 2))
+        {
+          ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+              p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+        }
+      else
+        {
+          ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+              p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+        }
+      // ret = nrf_libuarte_async_tx (
+      //     p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+      // if (ret_val == NRF_ERROR_BUSY)//ret
       //  {
       //    buffer_t buf = {
       //     .p_data = p_evt->data.rxtx.p_data,
-     //      .length = p_evt->data.rxtx.length,
+      //      .length = p_evt->data.rxtx.length,
       //    };
-          
-        buf.p_data = p_evt->data.rxtx.p_data;
-        buf.length = p_evt->data.rxtx.length;
-          ret = nrf_queue_push (&m_buf_queue0, &buf);
-          APP_ERROR_CHECK (ret);
+
+      buf.p_data = p_evt->data.rxtx.p_data;
+      buf.length = p_evt->data.rxtx.length;
+      ret = nrf_queue_push (&m_buf_queue0, &buf);
+      APP_ERROR_CHECK (ret);
       // }
-    //  else
-     //   {
-    //      APP_ERROR_CHECK (ret_val);
-    //    }
+      //  else
+      //   {
+      //      APP_ERROR_CHECK (ret_val);
+      //    }
 
       m_loopback_phase0 = true;
       break;
     case NRF_LIBUARTE_ASYNC_EVT_TX_DONE:
-   // if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
-   // {
-   //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
-   //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-   //             }
-   // else
-   // {
-   //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
-   //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-   // }
+      // if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
+      // {
+      //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+      //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+      //             }
+      // else
+      // {
+      //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+      //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+      // }
       if (m_loopback_phase0)
         {
-        m_loopback_phase0=false;
-        nrf_libuarte_async_rx_free (
-            p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-        if (!nrf_queue_is_empty (&m_buf_queue0))
-          {
-            buffer_t buf;
-            ret = nrf_queue_pop (&m_buf_queue0, &buf);
-            APP_ERROR_CHECK (ret);
-           // UNUSED_RETURN_VALUE (
-           //     nrf_libuarte_async_tx (p_libuarte, buf.p_data, buf.length));
-          }
+          m_loopback_phase0 = false;
+          nrf_libuarte_async_rx_free (
+              p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+          if (!nrf_queue_is_empty (&m_buf_queue0))
+            {
+              buffer_t buf;
+              ret = nrf_queue_pop (&m_buf_queue0, &buf);
+              APP_ERROR_CHECK (ret);
+              // UNUSED_RETURN_VALUE (
+              //     nrf_libuarte_async_tx (p_libuarte, buf.p_data,
+              //     buf.length));
+            }
         }
       break;
     default:
@@ -369,6 +370,7 @@ uint8_t writeScanMy[6] = { 0 };
 uint8_t Scanned[6] = { 0 };
 static bool firstScan = true;
 static bool findMatch = false;
+volatile bool withName=false;
 
 static void
 scan_evt_handler (scan_evt_t const *p_scan_evt)
@@ -461,29 +463,32 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
         //      {
         //        memmove (temp[0].name, temp[0].data + 15, 17);
         //      }
-
-        if (cntConnect == 0)
-          {
-            memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
-            cntConnect++;
-          }
-        else
-          {
-            memmove (Scanned, &temp[0].peer_addr.addr, 6);
-            findMatch = false;
-            for (int j = 0; j < cntConnect; j++)
+        
+          //{
+            if ((cntConnect == 0)&&(withName==true))
               {
-                memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
-                if (false == memcmp (Scanned, writeScanMy, 6))
-                  findMatch = true;
-              }
-            if (!findMatch)
-              {
-                memcpy (&scanMy[cntConnect], temp, sizeof (temp));
+                memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
                 cntConnect++;
+                 withName=false;
               }
-          }
-        //  }
+            else
+              {
+                memmove (Scanned, &temp[0].peer_addr.addr, 6);
+                findMatch = false;
+                for (int j = 0; j <= cntConnect; j++)
+                  {
+                    memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
+                    if (false == memcmp (Scanned, writeScanMy, 6))
+                      findMatch = true;
+                  }
+                if ((!findMatch)&&(withName==true))
+                  {
+                    memcpy (&scanMy[cntConnect], temp, sizeof (temp));
+                    cntConnect++;
+                    withName=false;
+                  }
+              }
+          //}
       }
       break;
 

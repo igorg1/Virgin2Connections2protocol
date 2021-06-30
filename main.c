@@ -70,6 +70,12 @@
 #include "nrf_log_ctrl.h"
 #include "nrf_log_default_backends.h"
 
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
+#include "nrf_ble_qwr.h"
+
 const uint8_t siamID[2] = { 0x0D, 0x0A };
 uint8_t modem1Str[12] = { 0x0d, 0x0a, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
   0x00, 0x90, 0x67 }; // 0d0a01010000000002009067
@@ -164,6 +170,12 @@ static ble_gap_scan_params_t m_scan_param = {
   //.extended = 1,
 };
 
+gExchangeFn gOnUartReceive0 = NULL;
+gCompleateFn gOnUartTxCompleate0 = NULL;
+void *gProtocolInstance0 = NULL;
+int gEnableRxUart0 = 0;
+int gEnableTxUart0 = 0;
+
 void
 uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
 {
@@ -177,29 +189,37 @@ uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
     case NRF_LIBUARTE_ASYNC_EVT_ERROR:
       break;
     case NRF_LIBUARTE_ASYNC_EVT_RX_DATA:
-      if (false == memcmp (p_evt->data.rxtx.p_data, siamID, 2))
-        {
-          ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
-              p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-        }
-      else
-        {
-          ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
-              p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-        }
-      // ret = nrf_libuarte_async_tx (
-      //     p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-      // if (ret_val == NRF_ERROR_BUSY)//ret
-      //  {
-      //    buffer_t buf = {
-      //     .p_data = p_evt->data.rxtx.p_data,
-      //      .length = p_evt->data.rxtx.length,
-      //    };
+      //      if (false == memcmp (p_evt->data.rxtx.p_data, siamID, 2))
+      //       {
+      //         ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+      //            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+      //      }
+      //    else
+      //       {
+      //        ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+      //            p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+      //      }
 
-      buf.p_data = p_evt->data.rxtx.p_data;
-      buf.length = p_evt->data.rxtx.length;
-      ret = nrf_queue_push (&m_buf_queue0, &buf);
-      APP_ERROR_CHECK (ret);
+      //  // ret = nrf_libuarte_async_tx (
+      //   //     p_libuarte, p_evt->data.rxtx.p_data,
+      //   p_evt->data.rxtx.length);
+      //   // if (ret_val == NRF_ERROR_BUSY)//ret
+      //   //  {
+      //   //    buffer_t buf = {
+      //   //     .p_data = p_evt->data.rxtx.p_data,
+      //   //      .length = p_evt->data.rxtx.length,
+      //   //    };
+      if ((gOnUartReceive0 != NULL)) //&&gEnableRxUart0)
+        {
+          buf.p_data = p_evt->data.rxtx.p_data;
+          buf.length = p_evt->data.rxtx.length;
+          NRF_LOG_INFO ("uart rx data len: %d", p_evt->data.rxtx.length);
+          ret = nrf_queue_push (&m_buf_queue0, &buf);
+          APP_ERROR_CHECK (ret);
+          gOnUartReceive0 (
+              gProtocolInstance0, (void *)&m_buf_queue0, 0); //@TODO
+        }
+      uart_clear_buf (p_libuarte, p_evt);
       // }
       //  else
       //   {
@@ -219,20 +239,26 @@ uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
       //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
       //         p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
       // }
-      if (m_loopback_phase0)
+      // if (m_loopback_phase0)
+      //   {
+      //      m_loopback_phase0 = false;
+      //      nrf_libuarte_async_rx_free (
+      //           p_libuarte, p_evt->data.rxtx.p_data,
+      //           p_evt->data.rxtx.length);
+      //      if (!nrf_queue_is_empty (&m_buf_queue0))
+      //        {
+      //          buffer_t buf;
+      //          ret = nrf_queue_pop (&m_buf_queue0, &buf);
+      //          APP_ERROR_CHECK (ret);
+      // UNUSED_RETURN_VALUE (
+      //     nrf_libuarte_async_tx (p_libuarte, buf.p_data,
+      //     buf.length));
+      //         }
+
+      //  }
+      if (gOnUartTxCompleate0 != NULL)
         {
-          m_loopback_phase0 = false;
-          nrf_libuarte_async_rx_free (
-              p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
-          if (!nrf_queue_is_empty (&m_buf_queue0))
-            {
-              buffer_t buf;
-              ret = nrf_queue_pop (&m_buf_queue0, &buf);
-              APP_ERROR_CHECK (ret);
-              // UNUSED_RETURN_VALUE (
-              //     nrf_libuarte_async_tx (p_libuarte, buf.p_data,
-              //     buf.length));
-            }
+          gOnUartTxCompleate0 (gProtocolInstance0);
         }
       break;
     default:
@@ -370,7 +396,7 @@ uint8_t writeScanMy[6] = { 0 };
 uint8_t Scanned[6] = { 0 };
 static bool firstScan = true;
 static bool findMatch = false;
-volatile bool withName=false;
+volatile bool withName = false;
 
 static void
 scan_evt_handler (scan_evt_t const *p_scan_evt)
@@ -463,32 +489,32 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
         //      {
         //        memmove (temp[0].name, temp[0].data + 15, 17);
         //      }
-        
-          //{
-            if ((cntConnect == 0)&&(withName==true))
+
+        //{
+        if ((cntConnect == 0) && (withName == true))
+          {
+            memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
+            cntConnect++;
+            withName = false;
+          }
+        else
+          {
+            memmove (Scanned, &temp[0].peer_addr.addr, 6);
+            findMatch = false;
+            for (int j = 0; j <= cntConnect; j++)
               {
-                memcpy (&scanMy[cntConnect], &temp, sizeof (temp));
+                memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
+                if (false == memcmp (Scanned, writeScanMy, 6))
+                  findMatch = true;
+              }
+            if ((!findMatch) && (withName == true))
+              {
+                memcpy (&scanMy[cntConnect], temp, sizeof (temp));
                 cntConnect++;
-                 withName=false;
+                withName = false;
               }
-            else
-              {
-                memmove (Scanned, &temp[0].peer_addr.addr, 6);
-                findMatch = false;
-                for (int j = 0; j <= cntConnect; j++)
-                  {
-                    memmove (&writeScanMy, scanMy[j].peer_addr.addr, 6);
-                    if (false == memcmp (Scanned, writeScanMy, 6))
-                      findMatch = true;
-                  }
-                if ((!findMatch)&&(withName==true))
-                  {
-                    memcpy (&scanMy[cntConnect], temp, sizeof (temp));
-                    cntConnect++;
-                    withName=false;
-                  }
-              }
-          //}
+          }
+        //}
       }
       break;
 
@@ -1077,7 +1103,7 @@ main (void)
       uart_event_handler1, (void *)&libuarte1);
   APP_ERROR_CHECK (err_code);
   nrf_libuarte_async_enable (&libuarte1);
-
+  Prot_Init (); //Инициализация протоколов
   // Start execution.
   printf ("BLE UART central example started.\r\n");
   NRF_LOG_INFO ("BLE UART central example started.");
@@ -1086,6 +1112,7 @@ main (void)
   // Enter main loop.
   for (;;)
     {
+      Prot_Handler();
       idle_state_handle ();
     }
 }

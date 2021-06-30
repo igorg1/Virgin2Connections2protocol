@@ -133,6 +133,27 @@
     <configuration
       Name="Release"
       c_preprocessor_definitions=" CONFIG_GPIO_AS_PINRESET" />
+    <folder Name="CustomFunctions">
+      <file file_name="exchenge.c" />
+      <file file_name="exchenge.h" />
+      <file file_name="Protokol.c" />
+      <file file_name="Protokol.h" />
+      <file file_name="ProtokolMB.h" />
+      <file file_name="ProtokolMbStruct.h" />
+      <file file_name="ProtokolSiam.h" />
+      <file file_name="ProtokolSiamStruct.h" />
+      <file file_name="mem_modem.h" />
+      <file file_name="mem_application.h" />
+      <file file_name="ProtokolSiam.c" />
+      <file file_name="ProtokolMB.c" />
+      <file file_name="mem_application.c" />
+      <file file_name="mem_commstruct.h" />
+      <file file_name="modbusCrc.c" />
+      <file file_name="mem_device.h" />
+      <file file_name="mem_device.c" />
+      <file file_name="uart.h" />
+      <file file_name="uart.c" />
+    </folder>
   </project>
   <configuration
     Name="Release"

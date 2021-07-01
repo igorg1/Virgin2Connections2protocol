@@ -49,7 +49,7 @@ extern HoldingReg HReg;
 #define sBL_LockCfg HReg.mBL_LockCfg
 
 #define sBluetoothCfg HReg.mModemParam.mBluetoothCfg
-#define sProtocolCfg HReg.mModemParam.mProtocolCfg
+//#define sProtocolCfg HReg.mModemParam.mProtocolCfg
 #define sUartCfg HReg.mModemParam.mUartCfg
 
 //-----------------------------------------------------------------------------

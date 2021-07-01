@@ -69,7 +69,7 @@ uint8_t flag_save = 0;
 uint8_t* find_reg_siam(uint8_t addr_device, uint32_t addr_reg, uint16_t len, eSiamRegisterMode eMode){
 //	if(sBL_Cfg.mModbusAddress == addr_device)
 //	{
-		if(SIAM_REG_WRITE == eMode)
+//		if(SIAM_REG_WRITE == eMode)
 			//ApplyCfg();
 		GETREG_region(REG_HOLDING_START, REG_HOLDING_NREGS*2, addr_reg, len, HoldingRegBL, HReg);
 //	}

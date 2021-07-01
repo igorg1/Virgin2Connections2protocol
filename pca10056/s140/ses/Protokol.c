@@ -6,9 +6,10 @@
 #include "mem_application.h"
 #include "nrf_log.h"
 
-//#include "ble_phy_handler.h"
+
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy_handler.h"
 #include "nrf_queue.h"
-//#include "uart.h"
+#include "uart.h"
 //#include "ble_modbus.h"
 //#include "ble_phy_handler.h"
 
@@ -105,28 +106,29 @@ void
 Prot_Init (void)
 {
   sProtocolAddr = sBL_Cfg.mModbusAddress;
-  sProtocolMode = sProtocolCfg.mMode;
-
+  //sProtocolMode = sProtocolCfg.mMode;
+  HReg.mSysUID.HW_ID = 0x1234;
   /*****Master****/
-  prot_inst_siam_master.addr = sProtocolAddr; // sBL_Cfg.mModbusAddress;
+  prot_inst_siam_master.addr = 127;//sProtocolAddr; // sBL_Cfg.mModbusAddress;
   prot_inst_siam_master.sProtokolType = prMaster;
   prot_inst_siam_master.state = NotInit;
   ex_blesiam.OnReceiveFn = DoReceive;
   ex_blesiam.OnTxCompleate = OnTxCompleate_Siam;
   ex_blesiam.sExType = 1;
-  BLE_Siam_Register (&prot_inst_siam_master, &ex_blesiam);
-
-  prot_inst_mb_master.addr = sProtocolAddr; // sBL_Cfg.mModbusAddress;
+//  BLE_Siam_Register (&prot_inst_siam_master, &ex_blesiam);
+  Uart0_Register(&prot_inst_siam_master, &ex_blesiam);
+/*  prot_inst_mb_master.addr = sProtocolAddr; // sBL_Cfg.mModbusAddress;
   prot_inst_mb_master.sProtokolType = prMaster;
   prot_inst_mb_master.state = NotInit;
   ex_blemb.OnReceiveFn = DoReceive;
   ex_blemb.OnTxCompleate = OnTxCompleate_Modbus;
   ex_blemb.sExType = 1;
   BLE_Mb_Register (&prot_inst_mb_master, &ex_blemb);
-
+*/
   /*****Slave****/
-  prot_inst_slave.addr = sProtocolAddr; // sBL_Cfg.mModbusAddress;
+  prot_inst_slave.addr = 127;// sProtocolAddr; // sBL_Cfg.mModbusAddress;
   prot_inst_slave.state = NotInit;
+  sProtocolMode = SiamMaster;
 
   ex_uart0.OnReceiveFn = DoReceive;
   switch (sProtocolMode)
@@ -180,17 +182,18 @@ Prot_Init (void)
 
       break;
     }
-  Uart0_Register (&prot_inst_slave, &ex_uart0);
+ // Uart0_Register (&prot_inst_slave, &ex_uart0);
+  BLE_Siam_Register(&prot_inst_slave, &ex_uart0);
 }
 //**********************************************************************************
 void
 Prot_Handler (void)
 {
-  gProtokolHandler (); //указатель на хандлер
+//  gProtokolHandler (); //указатель на хандлер
 
   Siam_Handler (
       &prot_inst_siam_master, &ex_blesiam); //Запросы от мастера отдаем мастеру
-  Modbus_Hanndler (
-      &prot_inst_mb_master, &ex_blemb); //Запросы от мастера отдаем мастеру
+//  Modbus_Hanndler (
+//      &prot_inst_mb_master, &ex_blemb); //Запросы от мастера отдаем мастеру
 }
 //**********************************************************************************

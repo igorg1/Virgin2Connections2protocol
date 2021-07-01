@@ -118,6 +118,7 @@
       <file file_name="../../../../../../components/ble/nrf_ble_scan/nrf_ble_scan.c" />
       <file file_name="../../../../../../components/ble/common/ble_conn_state.c" />
       <file file_name="../../../../../../components/libraries/atomic_flags/nrf_atflags.c" />
+      <file file_name="../../../../../../components/ble/ble_link_ctx_manager/ble_link_ctx_manager.c" />
     </folder>
     <folder Name="UTF8/UTF16 converter">
       <file file_name="../../../../../../external/utf_converter/utf.c" />
@@ -153,6 +154,14 @@
       <file file_name="mem_device.c" />
       <file file_name="uart.h" />
       <file file_name="uart.c" />
+      <file file_name="ble_phy_handler.h" />
+      <file file_name="ble_phy_handler.c" />
+      <file file_name="ble_siam.h" />
+      <file file_name="ble_phy.h" />
+      <file file_name="ble_phy.c" />
+      <file file_name="ble_modbus.h" />
+      <file file_name="ble_siam.c" />
+      <file file_name="ble_modbus.c" />
     </folder>
   </project>
   <configuration

@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include "nrf_libuarte_async.h"
 
+extern nrf_libuarte_async_t *gLibuarte0;
+
 void Uart0_Register (void *protocol, Exchange *ex);
 void Uart1_Register (void *protocol, Exchange *ex);
 void

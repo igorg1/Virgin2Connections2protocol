@@ -170,7 +170,7 @@ void FrameProcess_Saim(ProtInstanse* pr)
 	memcpy(&pr->mBuf, &pr->mBuf[pr->idxIn], pr->mLen);
 	pr->idxIn = 0;
 	pr->idxOut = 0;
-
+ 
 	const uint8_t ucFunctionCode = pr->mBuf[3];
 
 	const uint8_t addr_device = *(uint8_t*)&pr->mBuf[2];

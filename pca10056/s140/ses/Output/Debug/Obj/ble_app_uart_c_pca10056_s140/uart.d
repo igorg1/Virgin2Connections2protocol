@@ -74,4 +74,5 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/uart.o: \
  ../../../../../../components/libraries/util/app_error.h \
  ../../../../../../components/libraries/sortlist/nrf_sortlist.h \
  c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\protokolmbstruct.h \
- c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h
+ c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h

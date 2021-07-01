@@ -75,6 +75,7 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
 #include "nrf_ble_qwr.h"
+ 
 
 const uint8_t siamID[2] = { 0x0D, 0x0A };
 uint8_t modem1Str[12] = { 0x0d, 0x0a, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
@@ -87,6 +88,7 @@ uint8_t modem2Str[12] = { 0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
 /* LibUARTE section begin */
 NRF_LIBUARTE_ASYNC_DEFINE (libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE0 is Siam
+    nrf_libuarte_async_t *gLibuarte0= (nrf_libuarte_async_t *)&libuarte0;
 NRF_LIBUARTE_ASYNC_DEFINE (libuarte1, 1, 2, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE1 is MB
 
@@ -170,11 +172,114 @@ static ble_gap_scan_params_t m_scan_param = {
   //.extended = 1,
 };
 
+  nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =
+                                                                 TX_PIN_NUMBER,
+    .rx_pin = RX_PIN_NUMBER,
+    .baudrate = NRF_UARTE_BAUDRATE_115200,
+    .parity = NRF_UARTE_PARITY_EXCLUDED,
+    .hwfc = NRF_UARTE_HWFC_DISABLED,
+    .timeout_us = 1000,
+    .int_prio = 5 };
+
 gExchangeFn gOnUartReceive0 = NULL;
 gCompleateFn gOnUartTxCompleate0 = NULL;
 void *gProtocolInstance0 = NULL;
 int gEnableRxUart0 = 0;
 int gEnableTxUart0 = 0;
+
+void
+uart_clear_buf (
+    nrf_libuarte_async_t *p_libuarte, nrf_libuarte_async_evt_t *p_evt)
+{
+  nrf_libuarte_async_rx_free (
+      p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+}
+//**********************************************************************************
+
+uint16_t
+uarte0_data_send (uint8_t *data, uint16_t len)
+{
+  nrf_libuarte_async_tx (gLibuarte0, data, len);
+  return len;
+}
+
+void
+EnableRxUart0 (int enable)
+{
+  gEnableRxUart0 = enable;
+}
+void
+EnableTxUart0 (int enable)
+{
+  gEnableTxUart0 = enable;
+}
+
+void
+Sent0 (void *protocol, void *data, uint16_t len)
+{
+  if (gEnableTxUart0)
+    {
+      SendData (uarte0_data_send, MB_RTU_PDU_SIZE_MAX, (uint8_t *)data, len);
+    }
+}
+
+void uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt);
+
+uint8_t
+Uart0_Enable (void)
+{
+
+  ret_code_t err_code;
+  if (!libuarte0.p_libuarte->uarte->ENABLE)
+    {
+      err_code = nrf_libuarte_async_init (&libuarte0, &nrf_libuarte_async_config0,
+      uart_event_handler0, (void *)&libuarte0);
+      APP_ERROR_CHECK (err_code);
+      nrf_libuarte_async_enable (gLibuarte0);
+      NRF_LOG_INFO ("Uart0_Enable");
+      return 1;
+    }
+  return 0;
+}
+
+uint8_t
+Uart0_Disable (void)
+{
+  if (libuarte0.p_libuarte->uarte->ENABLE)
+    {
+      nrf_libuarte_async_uninit (&libuarte0);
+           NRF_LOG_INFO ("Uart0_Disable");
+      return 1;
+    }
+  return 0;
+}
+
+void
+Uart0_Register (void *protocol, Exchange *ex)
+{
+  memset (&nrf_libuarte_async_config0, 0, sizeof (nrf_libuarte_async_config0));
+
+  // uarte0_config.tx_pin		= PIN_TXD0;
+  // uarte0_config.rx_pin		= PIN_RXD0;
+  // uarte0_config.baudrate		= NRF_UARTE_BAUDRATE_57600;
+  // uarte0_config.parity		= NRF_UARTE_PARITY_EXCLUDED;
+  // uarte0_config.hwfc			= NRF_UARTE_HWFC_DISABLED;
+  // uarte0_config.timeout_us	= 10000;
+  // uarte0_config.int_prio		= APP_IRQ_PRIORITY_LOW;
+
+  // Uart0_UpdateCfg();
+
+  gOnUartReceive0 = ex->OnReceiveFn;
+  gOnUartTxCompleate0 = ex->OnTxCompleate;
+
+  ex->TransmitFn = Sent0;
+  ex->EnableRx = EnableRxUart0;
+  ex->EnableTx = EnableTxUart0;
+  gProtocolInstance0 = protocol;
+
+  ex->EnableRx (1);
+  // timer_uart0 = sUartCfg.mUart0Timer;
+}
 
 void
 uart_event_handler0 (void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
@@ -1070,14 +1175,7 @@ main (void)
   ret_code_t err_code;
   // Initialize.
   log_init ();
-  nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =
-                                                                 TX_PIN_NUMBER,
-    .rx_pin = RX_PIN_NUMBER,
-    .baudrate = NRF_UARTE_BAUDRATE_115200,
-    .parity = NRF_UARTE_PARITY_EXCLUDED,
-    .hwfc = NRF_UARTE_HWFC_DISABLED,
-    .timeout_us = 1000,
-    .int_prio = 5 };
+
   nrf_libuarte_async_config_t nrf_libuarte_async_config1 = { .tx_pin =
                                                                  ARDUINO_0_PIN,
     .rx_pin = ARDUINO_1_PIN,
@@ -1097,6 +1195,7 @@ main (void)
   scan_init ();
   err_code = nrf_libuarte_async_init (&libuarte0, &nrf_libuarte_async_config0,
       uart_event_handler0, (void *)&libuarte0);
+  //gLibuarte0 = &libuarte0;
   APP_ERROR_CHECK (err_code);
   nrf_libuarte_async_enable (&libuarte0);
   err_code = nrf_libuarte_async_init (&libuarte1, &nrf_libuarte_async_config1,
@@ -1107,7 +1206,7 @@ main (void)
   // Start execution.
   printf ("BLE UART central example started.\r\n");
   NRF_LOG_INFO ("BLE UART central example started.");
-  scan_start ();
+//  scan_start ();
 
   // Enter main loop.
   for (;;)
@@ -1116,3 +1215,4 @@ main (void)
       idle_state_handle ();
     }
 }
+

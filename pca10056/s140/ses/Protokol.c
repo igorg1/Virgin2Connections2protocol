@@ -189,7 +189,7 @@ Prot_Init (void)
 void
 Prot_Handler (void)
 {
-//  gProtokolHandler (); //указатель на хандлер
+  gProtokolHandler (); //указатель на хандлер
 
   Siam_Handler (
       &prot_inst_siam_master, &ex_blesiam); //«апросы от мастера отдаем мастеру

@@ -74,6 +74,7 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy_handler.h"
 #include "nrf_ble_qwr.h"
  
 
@@ -131,7 +132,7 @@ NRF_QUEUE_DEF (buffer_t, m_buf_queue1, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // MB
 BLE_NUS_C_ARRAY_DEF_SIAM (m_ble_nus_c_SIAM,
     NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
                                    (NUS) client instances. */
-
+    ble_nus_c_t * g_ble_nus_c_SIAM = (ble_nus_c_t *)&m_ble_nus_c_SIAM;
 BLE_NUS_C_ARRAY_DEF_MB (m_ble_nus_c_MB,
     NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
                                      (NUS) client instances. */
@@ -1206,7 +1207,7 @@ main (void)
   // Start execution.
   printf ("BLE UART central example started.\r\n");
   NRF_LOG_INFO ("BLE UART central example started.");
-//  scan_start ();
+  scan_start ();
 
   // Enter main loop.
   for (;;)

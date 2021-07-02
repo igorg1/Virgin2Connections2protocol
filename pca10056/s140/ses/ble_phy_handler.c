@@ -5,6 +5,7 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\ble\ble_link_ctx_manager\ble_link_ctx_manager.h"
 #include "nrf_log.h"
+#include "ble_nus_c.h"
 
 //**********************************************************************************
 //**********************************************************************************
@@ -119,15 +120,21 @@ uint32_t ble_siam_data_send(ble_siam_t * p_nus,
 
 uint16_t siam_data_send(uint8_t* data, uint16_t len)
 {
-	uint32_t err_code = ble_siam_data_send((void*)gServiceBleSiamFn, data, &len, *gConnHandlerSiam);
-	if ((err_code != NRF_ERROR_INVALID_STATE) &&
-		(err_code != NRF_ERROR_RESOURCES) &&
-		(err_code != NRF_ERROR_NOT_FOUND))
-	{
-		APP_ERROR_CHECK(err_code);
-		return 0;
-	}
-	return len;
+         uint32_t ret_val;
+         uint16_t conn_handle = 0;
+	//uint32_t err_code = ble_siam_data_send((void*)gServiceBleSiamFn, data, &len, *gConnHandlerSiam);
+	//if ((err_code != NRF_ERROR_INVALID_STATE) &&
+		//(err_code != NRF_ERROR_RESOURCES) &&
+		//(err_code != NRF_ERROR_NOT_FOUND))
+	//{
+		//APP_ERROR_CHECK(err_code);
+		//return 0;
+	//}
+	//return len;
+        ret_val = ble_nus_c_string_send (g_ble_nus_c_SIAM+sizeof (ble_nus_c_t)*conn_handle,
+              // p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
+                  data,len);
+                  return ret_val;
 }
 
 void EnableRxBleSiam(int enable)

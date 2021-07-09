@@ -204,7 +204,7 @@
 #endif
 // <o> NRF_BLE_SCAN_BUFFER - Data length for an advertising set. 
 #ifndef NRF_BLE_SCAN_BUFFER
-#define NRF_BLE_SCAN_BUFFER 31
+#define NRF_BLE_SCAN_BUFFER 255
 #endif
 
 // <o> NRF_BLE_SCAN_NAME_MAX_LEN - Maximum size for the name to search in the advertisement report. 
@@ -219,7 +219,7 @@
 
 // <o> NRF_BLE_SCAN_SCAN_INTERVAL - Scanning interval. Determines the scan interval in units of 0.625 millisecond. 
 #ifndef NRF_BLE_SCAN_SCAN_INTERVAL
-#define NRF_BLE_SCAN_SCAN_INTERVAL 160
+#define NRF_BLE_SCAN_SCAN_INTERVAL 240//160
 #endif
 
 // <o> NRF_BLE_SCAN_SCAN_DURATION - Duration of a scanning session in units of 10 ms. Range: 0x0001 - 0xFFFF (10 ms to 10.9225 ms). If set to 0x0000, the scanning continues until it is explicitly disabled. 
@@ -261,7 +261,7 @@
 // <255=> BLE_GAP_PHY_NOT_SET 
 
 #ifndef NRF_BLE_SCAN_SCAN_PHY
-#define NRF_BLE_SCAN_SCAN_PHY 1
+#define NRF_BLE_SCAN_SCAN_PHY 0
 #endif
 
 // <e> NRF_BLE_SCAN_FILTER_ENABLE - Enabling filters for the Scanning Module.

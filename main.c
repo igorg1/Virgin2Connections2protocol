@@ -162,15 +162,15 @@ static ble_uuid_t const m_nus2_uuid = { .uuid = BLE_UUID_NUS2_SERVICE,
 
 /**< Scan parameters requested for scanning and connection. */
 static ble_gap_scan_params_t m_scan_param = {
-  .active = NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
+  .active = 0,//NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
   .interval = NRF_BLE_SCAN_SCAN_INTERVAL,
   .window = NRF_BLE_SCAN_SCAN_WINDOW,
   .filter_policy = BLE_GAP_SCAN_FP_ACCEPT_ALL,
   .timeout = SCAN_DURATION_WHITELIST,
-  .scan_phys = BLE_GAP_PHY_1MBPS,
-  // .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
-  //.report_incomplete_evts = 1,
-  //.extended = 1,
+ // .scan_phys = BLE_GAP_PHY_CODED,//BLE_GAP_PHY_1MBPS,
+   .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
+  .report_incomplete_evts = 0,
+  .extended = 1,
 };
 
   nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =

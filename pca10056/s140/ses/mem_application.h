@@ -48,9 +48,9 @@ extern HoldingReg HReg;
 #define sLockCfg HReg.mLockCfg
 #define sBL_LockCfg HReg.mBL_LockCfg
 
-#define sBluetoothCfg HReg.mModemParam.mBluetoothCfg
+
 //#define sProtocolCfg HReg.mModemParam.mProtocolCfg
-#define sUartCfg HReg.mModemParam.mUartCfg
+//#define sUartCfg HReg.mModemParam.mUartCfg
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -69,6 +69,8 @@ typedef struct
 	SysUID			mSysUID;
 	LockCfg			mLockCfg;
 }__attribute__((aligned(4),packed)) APPParam;
+
+
 
 extern uint32_t* gAPPSysUID_Addr;
 //-----------------------------------------------------------------------------

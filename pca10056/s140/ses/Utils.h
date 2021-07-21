@@ -1,8 +1,14 @@
 #ifndef UTILS_H__
 #define UTILS_H__
 
+#include "app_error.h"
+#include "crc32.h"
 #include "nrf_fstorage.h"
 #include "nrf_fstorage_sd.h"
+#include "nrf_log.h"
+#include "nrf_power.h"
+#include "nrf_pwr_mgmt.h"
+#include <stddef.h>
 #include <stdint.h>
 
 #define FLASH_START_ADDR 0x00000000
@@ -19,6 +25,7 @@
 #endif
 #define FLASH_APPCGF_PAGE 3
 #define FLASH_BLCGF_PAGE 2
+#define FLASH_DEECFG_PAGE 10
 
 #define FLASH_BL_SIZE (FLASH_BL_PAGE * FLASH_PAGE_SIZE)
 #define FLASH_BL_START_ADDR (FLASH_START_ADDR + FLASH_SD_END_ADDR)
@@ -35,6 +42,13 @@
 #define FLASH_APPCFG_SIZE (FLASH_APPCGF_PAGE * FLASH_PAGE_SIZE)
 #define FLASH_APPCFG_START_ADDR (FLASH_BLCFG_START_ADDR - FLASH_APPCFG_SIZE)
 #define FLASH_APPCFG_END_ADDR (FLASH_APPCFG_START_ADDR + FLASH_APPCFG_SIZE)
+
+/*Data Emulation EEPROM (DEE) Start*/
+#define FLASH_DEECFG_SIZE (FLASH_DEECFG_PAGE * FLASH_PAGE_SIZE)
+#define FLASH_DEECFG_START_ADDR (FLASH_APPCFG_START_ADDR - FLASH_DEECFG_SIZE)
+#define FLASH_DEECFG_END_ADDR (FLASH_DEECFG_START_ADDR + FLASH_DEECFG_SIZE)
+
+/*Data Emulation EEPROM (DEE) Stop*/
 
 #define ADDR_FLASH_PAGE_0 0x00000000
 

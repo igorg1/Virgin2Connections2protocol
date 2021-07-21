@@ -72,12 +72,32 @@
 
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Utils.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy_handler.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_application.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_config.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
 #include "nrf_ble_qwr.h"
- 
 
+typedef struct
+{
+  uint16_t id_scan;
+  uint8_t addr[6];
+  ble_gap_conn_params_t p_conn_params;
+  char name[20];
+  uint8_t con_cfg_tag;
+  uint8_t mReserved[64 - sizeof (uint32_t) // version confit in Flash
+                    - sizeof (uint32_t)    // crc
+                    - sizeof (uint16_t) - sizeof (uint8_t) * 6 -
+                    sizeof (ble_gap_conn_params_t) - sizeof (char) * 20 -
+                    sizeof (uint8_t)];
+
+} SCANVAL;
+
+SCANVAL scanVal;
+SCANVAL readDEE[20];
+const APP_Storage *app_stor = NULL;
 const uint8_t siamID[2] = { 0x0D, 0x0A };
 uint8_t modem1Str[12] = { 0x0d, 0x0a, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
   0x00, 0x90, 0x67 }; // 0d0a01010000000002009067
@@ -89,7 +109,7 @@ uint8_t modem2Str[12] = { 0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
 /* LibUARTE section begin */
 NRF_LIBUARTE_ASYNC_DEFINE (libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE0 is Siam
-    nrf_libuarte_async_t *gLibuarte0= (nrf_libuarte_async_t *)&libuarte0;
+nrf_libuarte_async_t *gLibuarte0 = (nrf_libuarte_async_t *)&libuarte0;
 NRF_LIBUARTE_ASYNC_DEFINE (libuarte1, 1, 2, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE1 is MB
 
@@ -132,7 +152,7 @@ NRF_QUEUE_DEF (buffer_t, m_buf_queue1, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // MB
 BLE_NUS_C_ARRAY_DEF_SIAM (m_ble_nus_c_SIAM,
     NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
                                    (NUS) client instances. */
-    ble_nus_c_t * g_ble_nus_c_SIAM = (ble_nus_c_t *)&m_ble_nus_c_SIAM;
+ble_nus_c_t *g_ble_nus_c_SIAM = (ble_nus_c_t *)&m_ble_nus_c_SIAM;
 BLE_NUS_C_ARRAY_DEF_MB (m_ble_nus_c_MB,
     NRF_SDH_BLE_CENTRAL_LINK_COUNT); /**< BLE Nordic UART Service
                                      (NUS) client instances. */
@@ -160,27 +180,28 @@ static ble_uuid_t const m_nus_uuid_MB = { .uuid = BLE_UUID_NUS_SERVICE_MB,
 static ble_uuid_t const m_nus2_uuid = { .uuid = BLE_UUID_NUS2_SERVICE,
   .type = 0xFF }; // 0x16
 
-/**< Scan parameters requested for scanning and connection. */
+/**< Scan parameters requested for scanning and connection. BLE5/4 now */
 static ble_gap_scan_params_t m_scan_param = {
-  .active = 0,//NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
+  .active =
+      0, // NRF_BLE_SCAN_ACTIVE_SCANNING, /* Disable the acvtive scanning */
   .interval = NRF_BLE_SCAN_SCAN_INTERVAL,
   .window = NRF_BLE_SCAN_SCAN_WINDOW,
   .filter_policy = BLE_GAP_SCAN_FP_ACCEPT_ALL,
   .timeout = SCAN_DURATION_WHITELIST,
- // .scan_phys = BLE_GAP_PHY_CODED,//BLE_GAP_PHY_1MBPS,
-   .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
+  // .scan_phys = BLE_GAP_PHY_CODED,//BLE_GAP_PHY_1MBPS,
+  .scan_phys = BLE_GAP_PHY_CODED | BLE_GAP_PHY_1MBPS,
   .report_incomplete_evts = 0,
   .extended = 1,
 };
 
-  nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =
-                                                                 TX_PIN_NUMBER,
-    .rx_pin = RX_PIN_NUMBER,
-    .baudrate = NRF_UARTE_BAUDRATE_115200,
-    .parity = NRF_UARTE_PARITY_EXCLUDED,
-    .hwfc = NRF_UARTE_HWFC_DISABLED,
-    .timeout_us = 1000,
-    .int_prio = 5 };
+nrf_libuarte_async_config_t nrf_libuarte_async_config0 = { .tx_pin =
+                                                               TX_PIN_NUMBER,
+  .rx_pin = RX_PIN_NUMBER,
+  .baudrate = NRF_UARTE_BAUDRATE_115200,
+  .parity = NRF_UARTE_PARITY_EXCLUDED,
+  .hwfc = NRF_UARTE_HWFC_DISABLED,
+  .timeout_us = 1000,
+  .int_prio = 5 };
 
 gExchangeFn gOnUartReceive0 = NULL;
 gCompleateFn gOnUartTxCompleate0 = NULL;
@@ -233,8 +254,9 @@ Uart0_Enable (void)
   ret_code_t err_code;
   if (!libuarte0.p_libuarte->uarte->ENABLE)
     {
-      err_code = nrf_libuarte_async_init (&libuarte0, &nrf_libuarte_async_config0,
-      uart_event_handler0, (void *)&libuarte0);
+      err_code =
+          nrf_libuarte_async_init (&libuarte0, &nrf_libuarte_async_config0,
+              uart_event_handler0, (void *)&libuarte0);
       APP_ERROR_CHECK (err_code);
       nrf_libuarte_async_enable (gLibuarte0);
       NRF_LOG_INFO ("Uart0_Enable");
@@ -249,7 +271,7 @@ Uart0_Disable (void)
   if (libuarte0.p_libuarte->uarte->ENABLE)
     {
       nrf_libuarte_async_uninit (&libuarte0);
-           NRF_LOG_INFO ("Uart0_Disable");
+      NRF_LOG_INFO ("Uart0_Disable");
       return 1;
     }
   return 0;
@@ -500,6 +522,7 @@ m_scan_struct scanMy[20] = { 0 };
 m_scan_struct temp[1] = { 0 };
 uint8_t writeScanMy[6] = { 0 };
 uint8_t Scanned[6] = { 0 };
+uint8_t temp_;
 static bool firstScan = true;
 static bool findMatch = false;
 volatile bool withName = false;
@@ -509,6 +532,7 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
 {
   ret_code_t err_code;
   static bool isDone = false;
+  int i;
 
   switch (p_scan_evt->scan_evt_id)
     {
@@ -551,7 +575,7 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
         if (true == firstScan)
           {
             firstScan = false;
-            for (int i = 0; i < 20; i++)
+            for (i = 0; i < 20; i++)
               {
                 memset (&scanMy[i], 0, sizeof (scanMy[0]));
               }
@@ -626,9 +650,30 @@ scan_evt_handler (scan_evt_t const *p_scan_evt)
 
     case NRF_BLE_SCAN_EVT_SCAN_TIMEOUT:
       {
-        NRF_LOG_INFO ("Scan timed out.");
+        printf ("Scan timed out.\r\n");
+        printf ("Found next devices:\r\n");
+        printf ("N\t\t\t\t\t\t Name\t\t\t\t\t\t\t\t\t Mac Address\r\n");
+        for (i = 0; i < 20; i++) // arraySize of ScanMy
+          {
+            if (scanMy[i].peer_addr.addr[0] == 0x0)
+              {
+                temp_ = i;
+                break;
+              }
+          }
+        for (size_t j = 0; j < temp_; j++)
+          {
+            printf ("%d\t\t\t\t\t\t %s\t\t\t\t\t\t\t\t 0x%x%x%x%x%x%x \r\n", j,
+                scanMy[j].name, scanMy[j].peer_addr.addr[0],
+                scanMy[j].peer_addr.addr[1], scanMy[j].peer_addr.addr[2],
+                scanMy[j].peer_addr.addr[3], scanMy[j].peer_addr.addr[4],
+                scanMy[j].peer_addr.addr[5]);
+          }
         // scan_start();
         firstScan = true;
+        cntConnect = 0;
+        findMatch = false;
+        withName = false;
         //        const uint8_t modem3[6] = { 0x28, 0xEC, 0xCB, 0xAB, 0xEA,
         //        0xE9 };
         // const uint8_t modem1[6] = { 0x7C, 0x60, 0x72, 0x8C, 0xAD, 0xF6 };
@@ -953,6 +998,10 @@ bsp_event_handler (bsp_event_t event)
 {
   ret_code_t err_code;
   uint32_t ret_val;
+  int i;
+
+  uint32_t m = 0;
+  // pTest1=(int *)malloc(5);
   const uint8_t modem1[6] = { 0x7C, 0x60, 0x72, 0x8C, 0xAD, 0xF6 };
   const uint8_t modem2[6] = { 0x77, 0x8C, 0xF7, 0xDC, 0x0B, 0xEF };
   const uint8_t modem3[6] = { 0x28, 0xEC, 0xCB, 0xAB, 0xEA, 0xE9 };
@@ -979,55 +1028,96 @@ bsp_event_handler (bsp_event_t event)
 
     case BSP_EVENT_KEY_0:
       {
-        NRF_LOG_INFO ("BSP_EVENT_KEY_0");
-        for (int i = 0; i < cntConnect; i++)
-          {
-            if (false ==
-                memcmp (scanMy[i].peer_addr.addr, modem2, 6)) // My modem 2
-              {
-                NRF_LOG_HEXDUMP_INFO (scanMy[i].peer_addr.addr, 6);
-                err_code = sd_ble_gap_connect (&scanMy[i].peer_addr,
-                    &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
-                    scanMy[i].con_cfg_tag);
-                APP_ERROR_CHECK (err_code);
-              }
-          }
+        // NRF_LOG_INFO ("BSP_EVENT_KEY_0");
+        NRF_LOG_INFO ("Scan start");
+        scan_start ();
+        //  for (int i = 0; i < cntConnect; i++)
+        //     {
+        //      if (false ==
+        //          memcmp (scanMy[i].peer_addr.addr, modem2, 6)) // My modem 2
+        //       {
+        //         NRF_LOG_HEXDUMP_INFO (scanMy[i].peer_addr.addr, 6);
+        //         err_code = sd_ble_gap_connect (&scanMy[i].peer_addr,
+        //             &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
+        //             scanMy[i].con_cfg_tag);
+        //         APP_ERROR_CHECK (err_code);
+        //        }
+        //   }
       }
       break;
 
     case BSP_EVENT_KEY_1:
       {
-        NRF_LOG_INFO ("BSP_EVENT_KEY_1");
-        for (int i = 0; i < cntConnect; i++)
+        NRF_LOG_INFO ("Scan Done, save on Flash Memory");
+        for (i = 0; i < 20; i++) // arraySize of ScanMy
           {
-            if (false ==
-                memcmp (scanMy[i].peer_addr.addr, modem1, 6)) // My modem 1
-              {
-                NRF_LOG_HEXDUMP_INFO (scanMy[i].peer_addr.addr, 6);
-                err_code = sd_ble_gap_connect (&scanMy[i].peer_addr,
-                    &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
-                    scanMy[i].con_cfg_tag);
-                APP_ERROR_CHECK (err_code);
-              }
+            if (scanMy[i].peer_addr.addr[0] == 0x0)
+              break;
           }
+        // memset (scanVal, 0, sizeof (scanVal));
+        //    scanVal = (SCANVAL *)malloc (i * sizeof (SCANVAL));
+        // if (scanVal == NULL)
+        //   NRF_LOG_INFO ("Error. Can't work further");
+        for (size_t j = 0; j < i; j++)
+          {
+            memset (&scanVal, 0, sizeof (SCANVAL));
+            scanVal.id_scan = j;
+            memcpy (scanVal.name, scanMy[j].name, 20);
+            memcpy (&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
+            memcpy (&scanVal.p_conn_params, &scanMy[j].p_conn_params,
+                sizeof (scanVal.p_conn_params));
+            memcpy (&scanVal.addr, &scanMy[j].peer_addr.addr, 6);
+            Flash_SaveStor (FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
+                sizeof (SCANVAL), (uint32_t *)&scanVal);
+          }
+        //   Flash_SaveStor (FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
+        //       sizeof (SCANVAL) * i, (uint32_t *)scanVal);
+        NRF_LOG_INFO ("New data was Flashed");
+        //    free (scanVal);
+        //   for (int i = 0; i < cntConnect; i++)
+        //     {
+        //       if (false ==
+        //            memcmp (scanMy[i].peer_addr.addr, modem1, 6)) // My modem
+        //            1
+        //         {
+        //           NRF_LOG_HEXDUMP_INFO (scanMy[i].peer_addr.addr, 6);
+        //           err_code = sd_ble_gap_connect (&scanMy[i].peer_addr,
+        //               &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
+        //               scanMy[i].con_cfg_tag);
+        //           APP_ERROR_CHECK (err_code);
+        //        }
+        //    }
       }
       break;
     case BSP_EVENT_KEY_2:
       {
-        NRF_LOG_INFO ("BSP_EVENT_KEY_2");
-        do
+        NRF_LOG_INFO ("Read from Flash memory");
+        uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor (
+            FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof (SCANVAL));
+        i = 0;
+        memset (&readDEE, 0, sizeof (SCANVAL) * 20);
+        for (m = 0xF1000; m < endMemoryPtr; m += 0x40)
           {
-            ret_val =
-                ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
-            if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
-                (ret_val != NRF_ERROR_INVALID_STATE))
-              {
-                NRF_LOG_ERROR (
-                    "Failed sending NUS message. Error 0x%x. ", ret_val);
-                APP_ERROR_CHECK (ret_val);
-              }
+            memcpy( &readDEE[i],(uint32_t*)m,sizeof(SCANVAL));
+            i++;
           }
-        while (ret_val == NRF_ERROR_BUSY);
+        NRF_LOG_INFO ("Test");
+
+        // NRF_LOG_INFO ("BSP_EVENT_KEY_2");
+        // do
+        //   {
+        //     ret_val =
+        //         ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
+        //     if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
+        //         (ret_val != NRF_ERROR_INVALID_STATE))
+        //       {
+        //         NRF_LOG_ERROR (
+        //             "Failed sending NUS message. Error 0x%x. ", ret_val);
+        //         APP_ERROR_CHECK (ret_val);
+        //       }
+
+        //  }
+        // while (ret_val == NRF_ERROR_BUSY);
       }
       break;
     case BSP_EVENT_KEY_3:
@@ -1196,7 +1286,7 @@ main (void)
   scan_init ();
   err_code = nrf_libuarte_async_init (&libuarte0, &nrf_libuarte_async_config0,
       uart_event_handler0, (void *)&libuarte0);
-  //gLibuarte0 = &libuarte0;
+  // gLibuarte0 = &libuarte0;
   APP_ERROR_CHECK (err_code);
   nrf_libuarte_async_enable (&libuarte0);
   err_code = nrf_libuarte_async_init (&libuarte1, &nrf_libuarte_async_config1,
@@ -1204,16 +1294,17 @@ main (void)
   APP_ERROR_CHECK (err_code);
   nrf_libuarte_async_enable (&libuarte1);
   Prot_Init (); //Инициализация протоколов
+                //  flash_init(&fstorage_cfg);
+  flash_init (&fstorage_cfg);
   // Start execution.
   printf ("BLE UART central example started.\r\n");
   NRF_LOG_INFO ("BLE UART central example started.");
-  scan_start ();
+  // scan_start ();
 
   // Enter main loop.
   for (;;)
     {
-      Prot_Handler();
+      Prot_Handler ();
       idle_state_handle ();
     }
 }
-

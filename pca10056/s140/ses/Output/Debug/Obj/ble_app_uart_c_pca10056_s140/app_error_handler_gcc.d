@@ -1,10 +1,10 @@
 Output/Debug/Obj/ble_app_uart_c_pca10056_s140/app_error_handler_gcc.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\app_error_handler_gcc.c \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\sdk_common.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdint.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdbool.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/string.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/__crossworks.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdint.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdbool.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/string.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/__crossworks.h \
  ../config/sdk_config.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\nordic_common.h \
  ../../../../../../modules/nrfx/mdk/compiler_abstraction.h \
@@ -12,7 +12,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/app_error_handler_gcc.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\sdk_errors.h \
  ../../../../../../components/softdevice/s140/headers/nrf_error.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\app_util.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stddef.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stddef.h \
  ../../../../../../modules/nrfx/mdk/nrf.h \
  ../../../../../../modules/nrfx/mdk/nrf52840.h \
  ../../../../../../components/toolchain/cmsis/include/core_cm4.h \
@@ -30,5 +30,5 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/app_error_handler_gcc.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\sdk_macros.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\nrf_assert.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\app_error.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdio.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdio.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\util\app_error_weak.h

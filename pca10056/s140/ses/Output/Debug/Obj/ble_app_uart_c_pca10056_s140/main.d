@@ -1,10 +1,10 @@
 Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\main.c \
  ../../../../../../components/libraries/util/app_error.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdint.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdio.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/__crossworks.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdbool.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdint.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdio.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/__crossworks.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdbool.h \
  ../../../../../../modules/nrfx/mdk/nrf.h \
  ../../../../../../modules/nrfx/mdk/nrf52840.h \
  ../../../../../../components/toolchain/cmsis/include/core_cm4.h \
@@ -24,7 +24,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  ../../../../../../components/libraries/timer/app_timer.h \
  ../config/sdk_config.h \
  ../../../../../../components/libraries/util/app_util.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stddef.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stddef.h \
  ../../../../../../modules/nrfx/mdk/compiler_abstraction.h \
  ../../../../../../components/softdevice/s140/headers/nrf52/nrf_mbr.h \
  ../../../../../../components/softdevice/s140/headers/nrf_svc.h \
@@ -49,7 +49,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  ../../../../../../components/softdevice/s140/headers/ble_gap.h \
  ../../../../../../components/libraries/atomic/nrf_atomic.h \
  ../../../../../../components/libraries/util/sdk_common.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/string.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/string.h \
  ../../../../../../components/libraries/util/sdk_os.h \
  ../../../../../../components/libraries/util/app_util.h \
  ../../../../../../components/libraries/util/sdk_macros.h \
@@ -59,7 +59,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  ../../../../../../components/ble/common/ble_gatt_db.h \
  ../../../../../../components/ble/nrf_ble_gq/nrf_ble_gq.h \
  ../../../../../../components/libraries/memobj/nrf_memobj.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdlib.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdlib.h \
  ../../../../../../components/libraries/util/sdk_errors.h \
  ../../../../../../components/libraries/balloc/nrf_balloc.h \
  ../../../../../../components/libraries/util/app_util_platform.h \

@@ -1,10 +1,10 @@
 Output/Debug/Obj/ble_app_uart_c_pca10056_s140/nrf_queue.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\queue\nrf_queue.c \
  ../../../../../../components/libraries/util/sdk_common.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdint.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdbool.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/string.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/__crossworks.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdint.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdbool.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/string.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/__crossworks.h \
  ../config/sdk_config.h \
  ../../../../../../components/libraries/util/nordic_common.h \
  ../../../../../../modules/nrfx/mdk/compiler_abstraction.h \
@@ -12,7 +12,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/nrf_queue.o: \
  ../../../../../../components/libraries/util/sdk_errors.h \
  ../../../../../../components/softdevice/s140/headers/nrf_error.h \
  ../../../../../../components/libraries/util/app_util.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stddef.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stddef.h \
  ../../../../../../modules/nrfx/mdk/nrf.h \
  ../../../../../../modules/nrfx/mdk/nrf52840.h \
  ../../../../../../components/toolchain/cmsis/include/core_cm4.h \
@@ -40,7 +40,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/nrf_queue.o: \
  ../../../../../../components/softdevice/s140/headers/nrf_error_soc.h \
  ../../../../../../components/softdevice/s140/headers/nrf_nvic.h \
  ../../../../../../components/libraries/util/app_error.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdio.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdio.h \
  ../../../../../../components/libraries/util/app_error_weak.h \
  ../../../../../../components/libraries/log/nrf_log_instance.h \
  ../../../../../../components/libraries/experimental_section_vars/nrf_section.h \

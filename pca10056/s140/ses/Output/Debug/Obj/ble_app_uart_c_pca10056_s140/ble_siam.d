@@ -1,8 +1,8 @@
 Output/Debug/Obj/ble_app_uart_c_pca10056_s140/ble_siam.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_siam.c \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_siam.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdint.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdbool.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdint.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdbool.h \
  ../config/sdk_config.h \
  ../../../../../../components/softdevice/s140/headers/ble.h \
  ../../../../../../components/softdevice/s140/headers/nrf_svc.h \
@@ -31,8 +31,8 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/ble_siam.o: \
  ../../../../../../components/ble/common/ble_srv_common.h \
  ../../../../../../components/softdevice/s140/headers/ble_types.h \
  ../../../../../../components/libraries/util/app_util.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stddef.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/__crossworks.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stddef.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/__crossworks.h \
  ../../../../../../modules/nrfx/mdk/compiler_abstraction.h \
  ../../../../../../components/libraries/util/nordic_common.h \
  ../../../../../../components/softdevice/s140/headers/nrf52/nrf_mbr.h \
@@ -50,7 +50,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/ble_siam.o: \
  ../../../../../../components/ble/common/ble_conn_state.h \
  ../../../../../../components/libraries/atomic/nrf_atomic.h \
  ../../../../../../components/libraries/util/sdk_common.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/string.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/string.h \
  ../../../../../../components/libraries/util/sdk_os.h \
  ../../../../../../components/libraries/util/sdk_errors.h \
  ../../../../../../components/libraries/util/app_util.h \

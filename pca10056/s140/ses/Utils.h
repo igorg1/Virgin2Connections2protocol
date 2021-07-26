@@ -25,7 +25,7 @@
 #endif
 #define FLASH_APPCGF_PAGE 3
 #define FLASH_BLCGF_PAGE 2
-#define FLASH_DEECFG_PAGE 10
+#define FLASH_DEECFG_PAGE 2
 
 #define FLASH_BL_SIZE (FLASH_BL_PAGE * FLASH_PAGE_SIZE)
 #define FLASH_BL_START_ADDR (FLASH_START_ADDR + FLASH_SD_END_ADDR)
@@ -76,5 +76,6 @@ const uint32_t *Flash_LoadStor (
 int Flash_SaveStor (
     uint32_t start_addr, uint32_t end_addr, uint32_t len, uint32_t *new_data);
 int16_t Flash_Erase (uint32_t start, uint32_t len);
+
 
 #endif

@@ -6,15 +6,15 @@ NRF_FSTORAGE_DEF(nrf_fstorage_t fstorage_cfg) =
 {
 	.evt_handler	= fstorage_evt_handler,
 	.start_addr		= FLASH_DEECFG_START_ADDR,
-	.end_addr		= FLASH_BLCFG_END_ADDR,
+	.end_addr		= FLASH_BLCFG_END_ADDR ,//  
 };
 
-NRF_FSTORAGE_DEF(nrf_fstorage_t fstorage_app) =
+/*NRF_FSTORAGE_DEF(nrf_fstorage_t fstorage_app) =
 {
 	.evt_handler	= fstorage_evt_handler,
 	.start_addr		= FLASH_APP_START_ADDR,
 	.end_addr		= FLASH_APP_END_ADDR,
-};
+};*/
 
 void wait_for_flash_ready(nrf_fstorage_t const * p_fstorage)
 {
@@ -106,7 +106,7 @@ int16_t Flash_Erase(uint32_t start, uint32_t len)
 
 	for(; page_no < page_qty; page_no++)
 	{
-		flash_erase(&fstorage_app, page_no*FLASH_PAGE_SIZE);
+		flash_erase(&fstorage_cfg, page_no*FLASH_PAGE_SIZE);//&TODO was &fstorage_app
 	}
 
 	return 0;
@@ -177,6 +177,8 @@ const uint32_t* Flash_LoadStor(uint32_t start_addr, uint32_t end_addr, uint32_t 
 			}
 		}
 		start_addr += stor_bsize;
+                //&TODO
+                
 	}//while
 		NRF_LOG_INFO("Load Config. Addr: 0x%x", curr_cfg_address);
 	return (uint32_t*)curr_cfg_address;
@@ -232,3 +234,5 @@ int Flash_SaveStor(uint32_t start_addr, uint32_t end_addr, uint32_t len, uint32_
 
 	return 0;
 }
+
+

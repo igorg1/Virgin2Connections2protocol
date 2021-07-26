@@ -1,11 +1,11 @@
 Output/Debug/Obj/ble_app_uart_c_pca10056_s140/nrf_atfifo.o: \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\libraries\atomic_fifo\nrf_atfifo.c \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/string.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/__crossworks.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdint.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stdbool.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/string.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/__crossworks.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdint.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdbool.h \
  ../../../../../../components/libraries/util/app_util.h \
- C\:/Users/GayfulinIF/ncs/v1.5.0/toolchain/segger_embedded_studio/include/stddef.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stddef.h \
  ../../../../../../modules/nrfx/mdk/compiler_abstraction.h \
  ../../../../../../components/libraries/util/nordic_common.h \
  ../../../../../../modules/nrfx/mdk/nrf.h \

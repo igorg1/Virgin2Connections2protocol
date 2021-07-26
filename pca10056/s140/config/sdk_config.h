@@ -6292,7 +6292,7 @@
 // <e> APP_SCHEDULER_ENABLED - app_scheduler - Events scheduler
 //==========================================================
 #ifndef APP_SCHEDULER_ENABLED
-#define APP_SCHEDULER_ENABLED 1
+#define APP_SCHEDULER_ENABLED 0
 #endif
 // <q> APP_SCHEDULER_WITH_PAUSE  - Enabling pause feature
  
@@ -6823,7 +6823,7 @@
 // <e> FDS_ENABLED - fds - Flash data storage module
 //==========================================================
 #ifndef FDS_ENABLED
-#define FDS_ENABLED 0
+#define FDS_ENABLED 1
 #endif
 // <h> Pages - Virtual page settings
 
@@ -7375,7 +7375,7 @@
 // <i> Increase this value if API calls frequently return the error @ref NRF_ERROR_NO_MEM.
 
 #ifndef NRF_FSTORAGE_SD_QUEUE_SIZE
-#define NRF_FSTORAGE_SD_QUEUE_SIZE 4
+#define NRF_FSTORAGE_SD_QUEUE_SIZE 32// &TODO was4
 #endif
 
 // <o> NRF_FSTORAGE_SD_MAX_RETRIES - Maximum number of attempts at executing an operation when the SoftDevice is busy 
@@ -7383,7 +7383,7 @@
 // <i> The SoftDevice might fail to schedule flash access due to high BLE activity.
 
 #ifndef NRF_FSTORAGE_SD_MAX_RETRIES
-#define NRF_FSTORAGE_SD_MAX_RETRIES 8
+#define NRF_FSTORAGE_SD_MAX_RETRIES 1000// &TODO was8
 #endif
 
 // <o> NRF_FSTORAGE_SD_MAX_WRITE_SIZE - Maximum number of bytes to be written to flash in a single operation 
@@ -7425,7 +7425,7 @@
 // <e> NRF_PWR_MGMT_ENABLED - nrf_pwr_mgmt - Power management module
 //==========================================================
 #ifndef NRF_PWR_MGMT_ENABLED
-#define NRF_PWR_MGMT_ENABLED 1
+#define NRF_PWR_MGMT_ENABLED 1 
 #endif
 // <e> NRF_PWR_MGMT_CONFIG_DEBUG_PIN_ENABLED - Enables pin debug in the module.
 

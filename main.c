@@ -82,32 +82,24 @@
 
 typedef struct
 {
-//  uint32_t t;
-//  uint32_t tt;
   uint16_t id_scan;
   uint8_t addr[6];
   ble_gap_conn_params_t p_conn_params;
   char name[20];
   uint8_t con_cfg_tag;
   uint8_t conHandler;
-  uint8_t nameForNothing[64
-                    - sizeof(uint32_t) // version confit in Flash
-                    - sizeof(uint32_t)    // crc
+  uint8_t nameForNothing[64 - sizeof(uint32_t) // version confit in Flash
+                         - sizeof(uint32_t)    // crc
 
-                    - sizeof(uint16_t)
-                    - (6*sizeof(uint8_t))
-                    - sizeof(ble_gap_conn_params_t)
-                    - (20*sizeof(char))
-                    - sizeof(uint8_t)
-                    - sizeof(uint8_t)];
+                         - sizeof(uint16_t) - (6 * sizeof(uint8_t)) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
 
 } SCANVAL;
 
 SCANVAL scanVal;
 SCANVAL *readDEE;
 SCANVAL *dynScanSaveVal;
-static uint8_t dynArrayCnt = 0; //do not change manually
-static uint8_t scanMyCnt = 0;   //do not change manually
+uint8_t dynArrayCnt = 0; //do not change manually
+uint8_t scanMyCnt = 0;   //do not change manually
 volatile uint8_t workingPosition = 2;
 const APP_Storage *app_stor = NULL;
 const uint8_t siamID[2] = {0x0D, 0x0A};
@@ -246,8 +238,6 @@ void Sent0(void *protocol, void *data, uint16_t len) {
     SendData(uarte0_data_send, MB_RTU_PDU_SIZE_MAX, (uint8_t *)data, len);
   }
 }
-
-
 
 void uart_event_handler0(void *context, nrf_libuarte_async_evt_t *p_evt);
 
@@ -512,14 +502,14 @@ bool findUnique = false;
 static bool firstScan = true;
 static bool findMatch = false;
 volatile bool withName = false;
-volatile bool readWriteFlash=false;
+volatile bool readWriteFlash = false;
 
 static void
 scan_evt_handler(scan_evt_t const *p_scan_evt) {
   ret_code_t err_code;
   static bool isDone = false;
   int i, j;
- 
+
   switch (p_scan_evt->scan_evt_id) {
   case NRF_BLE_SCAN_EVT_CONNECTING_ERROR: {
     err_code = p_scan_evt->params.connecting_err.err_code;
@@ -652,7 +642,7 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
     scanMyCnt = i;
 
     NRF_LOG_INFO("Read from Flash memory\r\n");
-    readWriteFlash=true;
+    readWriteFlash = true;
 
     //        const uint8_t modem3[6] = { 0x28, 0xEC, 0xCB, 0xAB, 0xEA,
     //        0xE9 };
@@ -1208,64 +1198,75 @@ idle_state_handle(void) {
   }
 }
 
-void readFlash(void)
-{
-int i, j;
- uint32_t m = 0;
-  uint32_t endMemoryPtr = (uint32_t) Flash_LoadStor(
-        FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));   
-    if (endMemoryPtr > FLASH_DEECFG_START_ADDR) {//something in the flash
-    j = (int)(endMemoryPtr - 0xF1000);
-      j = j/ 0x40;
-      readDEE = (SCANVAL *)calloc(j, sizeof(SCANVAL));
-      if (readDEE == NULL)
-        NRF_LOG_INFO("Error. Can't work further");
-      j = 0;
-      for (m = 0xF1000; m < endMemoryPtr; m += 0x40) {
-        memcpy(&readDEE[j], (uint32_t *)m, sizeof(SCANVAL));
-        j++; // j now how many in flash memory
-      }
-      dynArrayCnt = j;
-    } 
-    //saving new scanning elements to Flash
-    else {
-      NRF_LOG_INFO("Saving scanned devices to Flash memory\r\n");
-      for (i = 0; i < 20; i++) // arraySize of ScanMy
-      {
-        if (scanMy[i].peer_addr.addr[0] == 0x0)
-          break;
-      }
-      for (j = 0; j < i; j++) {
-        memset(&scanVal, 0, sizeof(SCANVAL));
-        scanVal.id_scan = j;
-        memcpy(scanVal.name, scanMy[j].name, 20);
-        memcpy(&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
-        memcpy(&scanVal.p_conn_params, &scanMy[j].p_conn_params,
-            sizeof(scanVal.p_conn_params));
-        memcpy(&scanVal.addr, &scanMy[j].peer_addr.addr, 6);
-        Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
-            sizeof(SCANVAL), (uint32_t *)&scanVal);
-      }
+void readFlash(void) {
+  int i, j;
+  uint32_t m = 0;
+   SCANVAL *arrayForTemp;
+    uint8_t forTempArray = 0;
+  uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
+      FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
+  if (endMemoryPtr > FLASH_DEECFG_START_ADDR) { //something in the flash
+    j = (int)(endMemoryPtr - FLASH_DEECFG_START_ADDR);
+    j = j / 0x40;
+    readDEE = (SCANVAL *)calloc(j, sizeof(SCANVAL));
+    if (readDEE == NULL)
+      NRF_LOG_INFO("Error. Can't work further");
+    j = 0;
+    for (m = FLASH_DEECFG_START_ADDR; m < endMemoryPtr; m += 0x40) {
+      memcpy(&readDEE[j], (uint32_t *)m, sizeof(SCANVAL));
+      j++; // j now how many in flash memory
     }
-
+    dynArrayCnt = j;
     /* now find unique new element's in scanned array, if there */
-    SCANVAL *arrayForTemp;
-    uint8_t forTempArray=0;
-    arrayForTemp = (SCANVAL *)calloc(10, sizeof(SCANVAL));//10 elements in temp array only :)
-    for (i = 0; i < scanMyCnt; i++) //scanned array
+   
+    arrayForTemp = (SCANVAL *)calloc(10, sizeof(SCANVAL)); //10 elements in temp array only :)
+    for (i = 0; i < scanMyCnt; i++)                        //scanned array
     {
       findUnique = false;
       for (j = 0; j < dynArrayCnt; j++) {
         if (false == memcmp(&scanMy[i].peer_addr.addr, &readDEE[j].addr, 6))
           findUnique = true;
       }
-      if(!findUnique)//&TODO
+      if (!findUnique) //&TODO
       {
-        memcpy(&arrayForTemp[forTempArray].addr,&scanMy->peer_addr.addr,6);
-         memcpy(&arrayForTemp[forTempArray].name,&scanMy->name,20);
+        memcpy(&arrayForTemp[forTempArray].addr, &scanMy[i].peer_addr.addr, 6);
+        memcpy(&arrayForTemp[forTempArray].name, &scanMy[i].name, 20);
+        memcpy(&arrayForTemp[forTempArray].p_conn_params, &scanMy[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+        forTempArray++;
       }
     }
-    NRFX_DELAY_US(1);
+    if(forTempArray>0)//new founded scanned elements flashed to nonVolatile memory
+    {
+      for(i=0;i<forTempArray;i++)
+      {
+        Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
+          sizeof(SCANVAL), (uint32_t *)&arrayForTemp[i]);
+      }
+    }
+  }
+  //saving NEW scanning elements to EMPTY Flash
+  else {
+    NRF_LOG_INFO("Saving scanned devices to Flash memory\r\n");
+    for (i = 0; i < 20; i++) // arraySize of ScanMy
+    {
+      if (scanMy[i].peer_addr.addr[0] == 0x0)
+        break;
+    }
+    for (j = 0; j < i; j++) {
+      memset(&scanVal, 0, sizeof(SCANVAL));
+      scanVal.id_scan = j;
+      memcpy(scanVal.name, scanMy[j].name, 20);
+      memcpy(&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
+      memcpy(&scanVal.p_conn_params, &scanMy[j].p_conn_params,
+          sizeof(scanVal.p_conn_params));
+      memcpy(&scanVal.addr, &scanMy[j].peer_addr.addr, 6);
+      Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
+          sizeof(SCANVAL), (uint32_t *)&scanVal);
+    }
+  }
+  free(arrayForTemp);
+  free(readDEE);
+  NRFX_DELAY_US(1);
 }
 
 int main(void) {
@@ -1301,7 +1302,7 @@ int main(void) {
   APP_ERROR_CHECK(err_code);
   nrf_libuarte_async_enable(&libuarte1);
   Prot_Init(); //Инициализация протоколов
- 
+
   // Start execution.
   printf("BLE UART central example started.\r\n");
   NRF_LOG_INFO("BLE UART central example started.");
@@ -1310,10 +1311,9 @@ int main(void) {
   // Enter main loop.
   for (;;) {
     Prot_Handler();
-    if (true==readWriteFlash)
-    {
-    readWriteFlash=false;
-    readFlash();
+    if (true == readWriteFlash) {
+      readWriteFlash = false;
+      readFlash();
     }
 
     idle_state_handle();

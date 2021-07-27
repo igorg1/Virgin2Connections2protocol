@@ -83,15 +83,16 @@
 typedef struct
 {
   uint16_t id_scan;
-  uint8_t addr[6];
+  ble_gap_addr_t peer_addr;
+  uint8_t ttt;
   ble_gap_conn_params_t p_conn_params;
+  ble_gap_scan_params_t p_scan_params;
   char name[20];
   uint8_t con_cfg_tag;
   uint8_t conHandler;
-  uint8_t nameForNothing[64 - sizeof(uint32_t) // version confit in Flash
-                         - sizeof(uint32_t)    // crc
-
-                         - sizeof(uint16_t) - (6 * sizeof(uint8_t)) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
+  uint8_t nameForNothing[64 - 2*sizeof(uint32_t) // version confit in Flash
+                         //- sizeof(uint32_t)    // crc
+                         - sizeof(uint16_t)  -sizeof(ble_gap_addr_t) - sizeof(uint8_t)- sizeof(ble_gap_scan_params_t) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
 
 } SCANVAL;
 
@@ -109,6 +110,11 @@ uint8_t modem1StrMB[8] = {0x7F, 0x03, 0x00, 0x00, 0x00, 0x01, 0x8E,
     0x14}; // 7F03000000018E14
 uint8_t modem2Str[12] = {0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
     0x00, 0x16, 0xCF}; // 0d0a7F0100000000020016CF
+
+static bool firstScreen = false;
+static int8_t cntForConnect = 1;
+uint16_t savedFlashCnt = 0;
+uint8_t readFlashDEE(void);
 
 /* LibUARTE section begin */
 NRF_LIBUARTE_ASYNC_DEFINE(libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
@@ -993,6 +999,15 @@ void bsp_event_handler(bsp_event_t event) {
   } break;
 
   case BSP_EVENT_KEY_1: {
+    if (!firstScreen) {
+      firstScreen = true;
+      readFlashDEE();
+    }
+    cntForConnect++;
+    if (cntForConnect > (savedFlashCnt - 1))
+      cntForConnect = 0;
+    NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
+
     /* begin section*/
     //   NRF_LOG_INFO("Scan Done, save on Flash Memory");
     //   for (i = 0; i < 20; i++) // arraySize of ScanMy
@@ -1038,6 +1053,14 @@ void bsp_event_handler(bsp_event_t event) {
 
   } break;
   case BSP_EVENT_KEY_2: {
+    if (!firstScreen) {
+      firstScreen = true;
+      readFlashDEE();
+    }
+    cntForConnect--;
+    if (cntForConnect < 0)
+      cntForConnect = (savedFlashCnt - 1);
+    NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
 
     /* begin section*/
     //  NRF_LOG_INFO ("Read from Flash memory");
@@ -1070,34 +1093,38 @@ void bsp_event_handler(bsp_event_t event) {
     // while (ret_val == NRF_ERROR_BUSY);
   } break;
   case BSP_EVENT_KEY_3: {
+    NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
+    err_code = sd_ble_gap_connect(&dynScanSaveVal[cntForConnect].peer_addr, &dynScanSaveVal[cntForConnect].p_scan_params, &dynScanSaveVal[cntForConnect].p_conn_params, dynScanSaveVal[cntForConnect].con_cfg_tag);
+     APP_ERROR_CHECK(err_code);
+    /* begin section*/
+    //   NRF_LOG_INFO("BSP_EVENT_KEY_3");
 
-    NRF_LOG_INFO("BSP_EVENT_KEY_3");
-
-    for (int i = 0; i < cntConnect; i++) {
-      if (false == memcmp(scanMy[i].peer_addr.addr, modemDDIM2,
-                       6)) // modemDDIM180
-      {
-        NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
-        err_code = sd_ble_gap_connect(&scanMy[i].peer_addr,
-            &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
-            scanMy[i].con_cfg_tag);
-        APP_ERROR_CHECK(err_code);
-      }
-    }
-    // do
-    //    {
-    //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
-    //      modem1StrMB,
-    //          8); // ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
-    //          modem2Str,
-    // 12);
-    //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
-    //          (ret_val != NRF_ERROR_INVALID_STATE))
-    //        {
-    //          NRF_LOG_ERROR (
-    //              "Failed sending NUS message. Error 0x%x. ", ret_val);
-    //          APP_ERROR_CHECK (ret_val);
+    //   for (int i = 0; i < cntConnect; i++) {
+    //     if (false == memcmp(scanMy[i].peer_addr.addr, modemDDIM2,
+    //                       6)) // modemDDIM180
+    //      {
+    //       NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
+    //        err_code = sd_ble_gap_connect(&scanMy[i].peer_addr,
+    //            &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
+    //            scanMy[i].con_cfg_tag);
+    //        APP_ERROR_CHECK(err_code);
+    //      }
+    /*end section*/
   }
+  // do
+  //    {
+  //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
+  //      modem1StrMB,
+  //          8); // ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+  //          modem2Str,
+  // 12);
+  //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
+  //          (ret_val != NRF_ERROR_INVALID_STATE))
+  //        {
+  //          NRF_LOG_ERROR (
+  //              "Failed sending NUS message. Error 0x%x. ", ret_val);
+  //          APP_ERROR_CHECK (ret_val);
+  // }
   //    }
   //  while (ret_val == NRF_ERROR_BUSY);
   // }
@@ -1201,8 +1228,8 @@ idle_state_handle(void) {
 void readFlash(void) {
   int i, j;
   uint32_t m = 0;
-   SCANVAL *arrayForTemp;
-    uint8_t forTempArray = 0;
+  SCANVAL *arrayForTemp;
+  uint8_t forTempArray = 0;
   uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
       FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
   if (endMemoryPtr > FLASH_DEECFG_START_ADDR) { //something in the flash
@@ -1218,29 +1245,30 @@ void readFlash(void) {
     }
     dynArrayCnt = j;
     /* now find unique new element's in scanned array, if there */
-   
+
     arrayForTemp = (SCANVAL *)calloc(10, sizeof(SCANVAL)); //10 elements in temp array only :)
     for (i = 0; i < scanMyCnt; i++)                        //scanned array
     {
       findUnique = false;
       for (j = 0; j < dynArrayCnt; j++) {
-        if (false == memcmp(&scanMy[i].peer_addr.addr, &readDEE[j].addr, 6))
+        if (false == memcmp(&scanMy[i].peer_addr.addr, &readDEE[j].peer_addr.addr, 6))
           findUnique = true;
       }
       if (!findUnique) //&TODO
       {
-        memcpy(&arrayForTemp[forTempArray].addr, &scanMy[i].peer_addr.addr, 6);
+        memcpy(&arrayForTemp[forTempArray].peer_addr, &scanMy[i].peer_addr, sizeof(ble_gap_addr_t));
         memcpy(&arrayForTemp[forTempArray].name, &scanMy[i].name, 20);
         memcpy(&arrayForTemp[forTempArray].p_conn_params, &scanMy[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+        memcpy(&arrayForTemp[forTempArray].p_scan_params, &scanMy[i].p_scan_params, sizeof(ble_gap_scan_params_t));
+        memcpy(&arrayForTemp[forTempArray].con_cfg_tag, &scanMy[i].con_cfg_tag, sizeof(uint8_t));
         forTempArray++;
       }
     }
-    if(forTempArray>0)//new founded scanned elements flashed to nonVolatile memory
+    if (forTempArray > 0) //new founded scanned elements flashed to nonVolatile memory
     {
-      for(i=0;i<forTempArray;i++)
-      {
+      for (i = 0; i < forTempArray; i++) {
         Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
-          sizeof(SCANVAL), (uint32_t *)&arrayForTemp[i]);
+            sizeof(SCANVAL), (uint32_t *)&arrayForTemp[i]);
       }
     }
   }
@@ -1258,15 +1286,41 @@ void readFlash(void) {
       memcpy(scanVal.name, scanMy[j].name, 20);
       memcpy(&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
       memcpy(&scanVal.p_conn_params, &scanMy[j].p_conn_params,
-          sizeof(scanVal.p_conn_params));
-      memcpy(&scanVal.addr, &scanMy[j].peer_addr.addr, 6);
+          sizeof(ble_gap_conn_params_t));
+      memcpy(&scanVal.p_scan_params, &scanMy[j].p_scan_params,
+          sizeof(ble_gap_scan_params_t));
+      memcpy(&scanVal.peer_addr, &scanMy[j].peer_addr, sizeof(ble_gap_addr_t));
       Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
           sizeof(SCANVAL), (uint32_t *)&scanVal);
     }
   }
   free(arrayForTemp);
   free(readDEE);
-  NRFX_DELAY_US(1);
+  // NRFX_DELAY_US(1);
+}
+
+uint8_t readFlashDEE(void) {
+  int i, j;
+  uint32_t m = 0;
+  uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
+      FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
+  if (endMemoryPtr > FLASH_DEECFG_START_ADDR) { //something in the flash
+    i = (int)(endMemoryPtr - FLASH_DEECFG_START_ADDR);
+    i = i / 0x40;
+    dynScanSaveVal = (SCANVAL *)calloc(i, sizeof(SCANVAL));
+    if (dynScanSaveVal == NULL)
+      NRF_LOG_INFO("Error. Can't work further");
+    savedFlashCnt = 0;
+    for (m = FLASH_DEECFG_START_ADDR; m < endMemoryPtr; m += 0x40) {
+      memcpy(&dynScanSaveVal[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
+      NRF_LOG_INFO("%d\t\t\t\t%s", savedFlashCnt, &dynScanSaveVal[savedFlashCnt].name);
+      savedFlashCnt++; // savedFlashCnt now how many in flash memory
+    }
+    return 1;
+  } else if (endMemoryPtr == 0) {
+    NRF_LOG_INFO("Can't found saved devices. You must first scan.");
+    return 0;
+  }
 }
 
 int main(void) {

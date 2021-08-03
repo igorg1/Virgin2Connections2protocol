@@ -8084,6 +8084,8 @@
 #define NRF_LOG_TIMESTAMP_DEFAULT_FREQUENCY 0
 #endif
 
+
+
 // </e>
 
 // <h> nrf_log module configuration 

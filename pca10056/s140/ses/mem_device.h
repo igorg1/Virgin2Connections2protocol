@@ -8,7 +8,7 @@
 //*************************************************************
 //Параметры прибора по умолчанию
 //*************************************************************
-#define name_device				"SIAM MODEMv2\0"
+#define name_device				"Test\0"
 #define ver_device				"1.0.42nRf\0"
 #define DEVICE					0x1401
 #define MEM_MODEL				0x000c 

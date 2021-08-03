@@ -65,6 +65,7 @@
 #include "nrf_libuarte_async.h"
 #include "nrf_queue.h"
 #include <bsp.h>
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\main.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -90,9 +91,9 @@ typedef struct
   char name[20];
   uint8_t con_cfg_tag;
   uint8_t conHandler;
-  uint8_t nameForNothing[64 - 2*sizeof(uint32_t) // version confit in Flash
+  uint8_t nameForNothing[64 - 2 * sizeof(uint32_t) // version confit in Flash
                          //- sizeof(uint32_t)    // crc
-                         - sizeof(uint16_t)  -sizeof(ble_gap_addr_t) - sizeof(uint8_t)- sizeof(ble_gap_scan_params_t) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
+                         - sizeof(uint16_t) - sizeof(ble_gap_addr_t) - sizeof(uint8_t) - sizeof(ble_gap_scan_params_t) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
 
 } SCANVAL;
 
@@ -115,7 +116,6 @@ static bool firstScreen = false;
 static int8_t cntForConnect = 1;
 uint16_t savedFlashCnt = 0;
 uint8_t readFlashDEE(void);
-
 /* LibUARTE section begin */
 NRF_LIBUARTE_ASYNC_DEFINE(libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE0 is Siam
@@ -459,7 +459,7 @@ nus_error_handler(uint32_t nrf_error) {
 }
 
 /**@brief Function to start scanning. */
-static void
+void
 scan_start(void) {
   ret_code_t ret;
 
@@ -1095,7 +1095,7 @@ void bsp_event_handler(bsp_event_t event) {
   case BSP_EVENT_KEY_3: {
     NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
     err_code = sd_ble_gap_connect(&dynScanSaveVal[cntForConnect].peer_addr, &dynScanSaveVal[cntForConnect].p_scan_params, &dynScanSaveVal[cntForConnect].p_conn_params, dynScanSaveVal[cntForConnect].con_cfg_tag);
-     APP_ERROR_CHECK(err_code);
+    APP_ERROR_CHECK(err_code);
     /* begin section*/
     //   NRF_LOG_INFO("BSP_EVENT_KEY_3");
 
@@ -1361,6 +1361,7 @@ int main(void) {
   printf("BLE UART central example started.\r\n");
   NRF_LOG_INFO("BLE UART central example started.");
   // scan_start ();
+  sBL_Cfg.mModbusAddress = 127;
 
   // Enter main loop.
   for (;;) {
@@ -1369,7 +1370,7 @@ int main(void) {
       readWriteFlash = false;
       readFlash();
     }
-
+    Config_Handler();
     idle_state_handle();
   }
 }

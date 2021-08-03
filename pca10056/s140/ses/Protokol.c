@@ -193,7 +193,7 @@ Prot_Handler (void)
 
   Siam_Handler (
       &prot_inst_siam_master, &ex_blesiam); //Запросы от мастера отдаем мастеру
-//  Modbus_Hanndler (
-//      &prot_inst_mb_master, &ex_blemb); //Запросы от мастера отдаем мастеру
+  Modbus_Hanndler (
+      &prot_inst_mb_master, &ex_blemb); //Запросы от мастера отдаем мастеру
 }
 //**********************************************************************************

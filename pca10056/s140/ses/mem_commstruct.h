@@ -7,11 +7,14 @@
 typedef enum __attribute__ ((aligned(2)))
 {
 	ccNone = 0U
-	,ccSetDefault= 1U
-	,ccApply= 2U
-	,ccSave = 4U
-	,ccReboot= 8U
+	,ccSetDefault= 11U
+	,ccApply= 12U
+	,ccSave =14U
+	,ccReboot= 18U
 	,ccStartApp= 16U
+        ,SCAN=1,
+        SAVE=2,
+        ERASE=3
 } CfgCommand;
 //-----------------------------------------------------------------------------
 typedef enum __attribute__ ((aligned(2)))

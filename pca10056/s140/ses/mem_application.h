@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stddef.h>
 //#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_modem.h"
+#include "mem_modem.h"
+
 
 
 typedef struct
@@ -18,7 +20,7 @@ typedef struct
     SysUID mBL_UID;
     LockCtrl mBL_LockCtrl;
   // Modem--------------------
-   // ModemParam mModemParam;
+    ModemParam mModemParam;
   // Device-------------------
 
   // protected - inaccessible from modbus
@@ -47,6 +49,9 @@ extern HoldingReg HReg;
 
 #define sLockCfg HReg.mLockCfg
 #define sBL_LockCfg HReg.mBL_LockCfg
+
+#define sProtocolCfg		HReg.mModemParam.mProtocolCfg
+#define sUartCfg			HReg.mModemParam.mUartCfg
 
 
 //#define sProtocolCfg HReg.mModemParam.mProtocolCfg

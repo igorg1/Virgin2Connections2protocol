@@ -1,6 +1,7 @@
 #include "mem_application.h"
 //#include "main.h"
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
+//#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
+#include "ProtokolMbStruct.h"
 #include <string.h>
 
 #define MYBSWAP16(v) ((uint16_t) (v) >> 8) | ((uint16_t) (v) << 8)

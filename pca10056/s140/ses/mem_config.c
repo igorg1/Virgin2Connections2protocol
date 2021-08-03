@@ -3,6 +3,7 @@
 #include <nrf_sdm.h>
 #include <stddef.h>
 #include "nrf_delay.h"
+#include "main.h"
 
 void APPCfg_Load(void);
 void APPCfg_Save(void);
@@ -11,10 +12,10 @@ void BLCfg_Load(void);
 
 void StartApp(void);
 
-#define vector_table_addr 0x40000 //0x2c000
+//#define vector_table_addr 0x40000 //0x2c000
 DeviceParam				static_param;
 uint16_t				gPendingApplyCfg=0;
-uint8_t					gCurrentPasswd[8] = {0,0,0,0,0,0,0,0};
+uint8_t					gCurrentPasswd[8] = {1,2,3,4,5,6,7,8};
 uint32_t				gCurrentCRC=0;
 
 
@@ -87,8 +88,8 @@ void APPCfg_Load(void)
 										, FLASH_APPCFG_END_ADDR, sizeof(APP_Storage));
 	if(app_stor && 0==memcmp(gAPPSysUID_Addr, &app_stor->mAPPParam.mSysUID, sizeof(SysUID)) )
 	{
-	//	sSysUID = *(SysUID*)gAPPSysUID_Addr;
-	//	sLockCfg = app_stor->mAPPParam.mLockCfg;
+		sSysUID = *(SysUID*)gAPPSysUID_Addr;
+		sLockCfg = app_stor->mAPPParam.mLockCfg;
 
 	//	memcpy(&sBluetoothCfg.mDefaultName,
 	//					app_stor->mModemParam.mBluetoothCfg.mDefaultName,
@@ -114,9 +115,9 @@ void APPCfg_Load(void)
 	//	sBluetoothCfg.mAdvDuration = app_stor->mModemParam.mBluetoothCfg.mAdvDuration;
 	//	sBluetoothCfg.mDisconnectTimer = app_stor->mModemParam.mBluetoothCfg.mDisconnectTimer;
 		
-	//	sProtocolCfg.mMode = app_stor->mModemParam.mProtocolCfg.mMode;
+		sProtocolCfg.mMode = app_stor->mModemParam.mProtocolCfg.mMode;
 		
-	//	sUartCfg.mSpeedUart0 = app_stor->mModemParam.mUartCfg.mSpeedUart0;
+		sUartCfg.mSpeedUart0 = app_stor->mModemParam.mUartCfg.mSpeedUart0;
 	//	sUartCfg.mUart0Timer = app_stor->mModemParam.mUartCfg.mUart0Timer;
 	}
 	else
@@ -223,21 +224,22 @@ void SysCtrl_Configurate(void)
 		switch(sSysCtrl.mCommand)
 		{
 		default: break;
-		case ccSetDefault:
-			APPCfg_SetDefault();
+		case SCAN:
+		//	APPCfg_SetDefault();
+                      scan_start();   
 			break;
 		case ccSave:
-			sLockCfg.mLock = sLockCtrl.mLockCmd;
-			APPCfg_Save();
+		//	sLockCfg.mLock = sLockCtrl.mLockCmd;
+		//	APPCfg_Save();
 			break;
 		case ccApply:
-			ApplyCfg();
+		//	ApplyCfg();
 			break;
 		case ccReboot:
 			//bsp_board_led_off(1);
-			nrf_delay_ms(200);
-			err_code = sd_nvic_SystemReset();
-			APP_ERROR_CHECK(err_code);
+		//	nrf_delay_ms(200);
+		//	err_code = sd_nvic_SystemReset();
+		//	APP_ERROR_CHECK(err_code);
 			break;
 		}
 		sSysCtrl.mStatus++;

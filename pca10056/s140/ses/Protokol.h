@@ -28,7 +28,7 @@ typedef struct
   ProtokolType sProtokolType;
   uint8_t sExType;
   ProtokolState state;
-  uint8_t mBuf[MAX_PROT_LEN * 2];
+  uint8_t mBuf[MAX_PROT_LEN * 16];
   uint16_t mLen;
   uint16_t idxIn;
   uint16_t idxOut;

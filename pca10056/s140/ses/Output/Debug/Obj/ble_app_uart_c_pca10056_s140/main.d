@@ -104,21 +104,6 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  ../../../../../../components/libraries/pwr_mgmt/nrf_pwr_mgmt.h \
  ../../../../../../components/softdevice/common/nrf_sdh.h \
  ../../../../../../components/softdevice/common/nrf_sdh_soc.h \
- ../../../../../../integration/nrfx/legacy/nrf_drv_clock.h \
- ../../../../../../modules/nrfx/drivers/include/nrfx_clock.h \
- ../../../../../../modules/nrfx/hal/nrf_clock.h \
- ../../../../../../modules/nrfx/drivers/include/nrfx_power_clock.h \
- ../../../../../../components/libraries/libuarte/nrf_libuarte_async.h \
- ../../../../../../modules/nrfx/drivers/include/nrfx_ppi.h \
- ../../../../../../modules/nrfx/hal/nrf_ppi.h \
- ../../../../../../modules/nrfx/drivers/include/nrfx_timer.h \
- ../../../../../../modules/nrfx/hal/nrf_timer.h \
- ../../../../../../modules/nrfx/drivers/include/nrfx_rtc.h \
- ../../../../../../modules/nrfx/hal/nrf_rtc.h \
- ../../../../../../components/libraries/libuarte/nrf_libuarte_drv.h \
- ../../../../../../modules/nrfx/hal/nrf_uarte.h \
- ../../../../../../modules/nrfx/hal/nrf_uarte.h \
- ../../../../../../components/libraries/bsp/bsp.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\main.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy.h \
  ../../../../../../components/ble/nrf_ble_qwr/nrf_ble_qwr.h \
@@ -144,6 +129,21 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/main.o: \
  ../../../../../../components/libraries/log/nrf_log_types.h \
  ../../../../../../modules/nrfx/hal/nrf_power.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h \
+ ../../../../../../components/libraries/libuarte/nrf_libuarte_async.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_ppi.h \
+ ../../../../../../modules/nrfx/hal/nrf_ppi.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_timer.h \
+ ../../../../../../modules/nrfx/hal/nrf_timer.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_rtc.h \
+ ../../../../../../modules/nrfx/hal/nrf_rtc.h \
+ ../../../../../../components/libraries/libuarte/nrf_libuarte_drv.h \
+ ../../../../../../modules/nrfx/hal/nrf_uarte.h \
+ ../../../../../../modules/nrfx/hal/nrf_uarte.h \
+ ../../../../../../integration/nrfx/legacy/nrf_drv_clock.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_clock.h \
+ ../../../../../../modules/nrfx/hal/nrf_clock.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_power_clock.h \
+ ../../../../../../components/libraries/bsp/bsp.h \
  ../../../../../../components/libraries/log/nrf_log_ctrl.h \
  ../../../../../../components/libraries/log/src/nrf_log_ctrl_internal.h \
  ../../../../../../components/libraries/log/nrf_log_backend_interface.h \

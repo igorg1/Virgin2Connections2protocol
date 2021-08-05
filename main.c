@@ -61,11 +61,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\main.h"
 #include "nrf_drv_clock.h"
 #include "nrf_libuarte_async.h"
 #include "nrf_queue.h"
 #include <bsp.h>
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\main.h"
 
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
@@ -97,11 +97,14 @@ typedef struct
 
 } SCANVAL;
 
+extern HoldingReg HReg;
 SCANVAL scanVal;
 SCANVAL *readDEE;
-SCANVAL *dynScanSaveVal;
+//SCANVAL *dynScanSaveVal;
+SCANVAL flashedDevicesArray[62];
 uint8_t dynArrayCnt = 0; //do not change manually
 uint8_t scanMyCnt = 0;   //do not change manually
+uint8_t cntAll = 0;      //scanMyCnt+read from Flash count
 volatile uint8_t workingPosition = 2;
 const APP_Storage *app_stor = NULL;
 const uint8_t siamID[2] = {0x0D, 0x0A};
@@ -112,6 +115,7 @@ uint8_t modem1StrMB[8] = {0x7F, 0x03, 0x00, 0x00, 0x00, 0x01, 0x8E,
 uint8_t modem2Str[12] = {0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
     0x00, 0x16, 0xCF}; // 0d0a7F0100000000020016CF
 
+uint16_t oldHRegID = 0;
 static bool firstScreen = false;
 static int8_t cntForConnect = 1;
 uint16_t savedFlashCnt = 0;
@@ -225,10 +229,17 @@ void uart_clear_buf(
       p_libuarte, p_evt->data.rxtx.p_data, p_evt->data.rxtx.length);
 }
 //**********************************************************************************
+bool uart0_tx_complete = false;
 
 uint16_t
 uarte0_data_send(uint8_t *data, uint16_t len) {
+  uart0_tx_complete = false;
+
   nrf_libuarte_async_tx(gLibuarte0, data, len);
+
+  do {
+    __WFE();
+  } while (!uart0_tx_complete);
   return len;
 }
 
@@ -349,6 +360,7 @@ void uart_event_handler0(void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
     m_loopback_phase0 = true;
     break;
   case NRF_LIBUARTE_ASYNC_EVT_TX_DONE:
+    uart0_tx_complete = true;
     // if(false==memcmp(p_evt->data.rxtx.p_data,siamID,2))
     // {
     //     ret_val = ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
@@ -459,8 +471,7 @@ nus_error_handler(uint32_t nrf_error) {
 }
 
 /**@brief Function to start scanning. */
-void
-scan_start(void) {
+void scan_start(void) {
   ret_code_t ret;
 
   // ret = nrf_ble_scan_start (&m_scan);
@@ -509,6 +520,9 @@ static bool firstScan = true;
 static bool findMatch = false;
 volatile bool withName = false;
 volatile bool readWriteFlash = false;
+static uint8_t forCnt=0;
+uint8_t oldForCnt=0;
+
 
 static void
 scan_evt_handler(scan_evt_t const *p_scan_evt) {
@@ -646,9 +660,48 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
         break;
     }
     scanMyCnt = i;
+    // HReg.cntScanVal += scanMyCnt;
+    for (i = 0; i < 62; i++) {
+      memset(&HReg.workingScanVal[i], 0, sizeof(WORKINGSCANVAL));
+    }
+    findUnique = false;
+    if (cntAll > 0) {
+      for (i = 0; i < cntAll; i++) {
+        findUnique = false;
+        for (int j = 0; j < scanMyCnt; j++) {
+          if (false == memcmp(flashedDevicesArray[i].peer_addr.addr, scanMy[j].peer_addr.addr, 6))
+            findUnique = true;
+        }
+        if (!findUnique) {
+        
+        }
+      }
+    }
+    else if (cntAll==0){//nothing in Flash
+    oldForCnt=forCnt;
+      for (i = 0; i < oldForCnt; i++) {
+        findUnique = false;
+        for (int j = 0; j < scanMyCnt; j++) {
+          if (false == memcmp(&HReg.workingScanVal[i].mac_addr, scanMy[j].peer_addr.addr, 6)){
+            findUnique = true;
+            }
+        }
+        if (!findUnique) {
+          memcpy(&HReg.workingScanVal[forCnt].mac_addr, scanMy[i].peer_addr.addr, 6);
+          memcpy(&HReg.workingScanVal[forCnt].name, scanMy[i].name, 20);
+          forCnt++;
+        }
+      }
+    }
+    // for (i = 0; i < scanMyCnt; i++) {
+    //    memcpy(&HReg.workingScanVal[i].mac_addr, scanMy[i].peer_addr.addr, 6);
+    //    memcpy(&HReg.workingScanVal[i].name, scanMy[i].name, 20);
+    //   }
+    //if flashMemory' storage empty - fill from 0 our array
 
-    NRF_LOG_INFO("Read from Flash memory\r\n");
-    readWriteFlash = true;
+     NRF_LOG_INFO("Read from Flash memory\r\n");
+
+    //readWriteFlash = true;
 
     //        const uint8_t modem3[6] = { 0x28, 0xEC, 0xCB, 0xAB, 0xEA,
     //        0xE9 };
@@ -1093,9 +1146,9 @@ void bsp_event_handler(bsp_event_t event) {
     // while (ret_val == NRF_ERROR_BUSY);
   } break;
   case BSP_EVENT_KEY_3: {
-    NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
-    err_code = sd_ble_gap_connect(&dynScanSaveVal[cntForConnect].peer_addr, &dynScanSaveVal[cntForConnect].p_scan_params, &dynScanSaveVal[cntForConnect].p_conn_params, dynScanSaveVal[cntForConnect].con_cfg_tag);
-    APP_ERROR_CHECK(err_code);
+    //  NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
+    //  err_code = sd_ble_gap_connect(&dynScanSaveVal[cntForConnect].peer_addr, &dynScanSaveVal[cntForConnect].p_scan_params, &dynScanSaveVal[cntForConnect].p_conn_params, dynScanSaveVal[cntForConnect].con_cfg_tag);
+    //  APP_ERROR_CHECK(err_code);
     /* begin section*/
     //   NRF_LOG_INFO("BSP_EVENT_KEY_3");
 
@@ -1247,9 +1300,10 @@ void readFlash(void) {
     /* now find unique new element's in scanned array, if there */
 
     arrayForTemp = (SCANVAL *)calloc(10, sizeof(SCANVAL)); //10 elements in temp array only :)
-    for (i = 0; i < scanMyCnt; i++)                        //scanned array
+    findUnique = false;
+    for (i = 0; i < scanMyCnt; i++) //scanned array
     {
-      findUnique = false;
+      // findUnique = false;
       for (j = 0; j < dynArrayCnt; j++) {
         if (false == memcmp(&scanMy[i].peer_addr.addr, &readDEE[j].peer_addr.addr, 6))
           findUnique = true;
@@ -1300,34 +1354,51 @@ void readFlash(void) {
 }
 
 uint8_t readFlashDEE(void) {
-  int i, j;
+  // int i, j;
   uint32_t m = 0;
   uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
       FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
   if (endMemoryPtr > FLASH_DEECFG_START_ADDR) { //something in the flash
-    i = (int)(endMemoryPtr - FLASH_DEECFG_START_ADDR);
-    i = i / 0x40;
-    dynScanSaveVal = (SCANVAL *)calloc(i, sizeof(SCANVAL));
-    if (dynScanSaveVal == NULL)
-      NRF_LOG_INFO("Error. Can't work further");
+                                                //   i = (int)(endMemoryPtr - FLASH_DEECFG_START_ADDR);
+                                                //   i = i / 0x40;
+                                                // dynScanSaveVal = (SCANVAL *)calloc(i, sizeof(SCANVAL));
+                                                // if (dynScanSaveVal == NULL)
+                                                //   NRF_LOG_INFO("Error. Can't work further");
     savedFlashCnt = 0;
     for (m = FLASH_DEECFG_START_ADDR; m < endMemoryPtr; m += 0x40) {
-      memcpy(&dynScanSaveVal[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
-      NRF_LOG_INFO("%d\t\t\t\t%s", savedFlashCnt, &dynScanSaveVal[savedFlashCnt].name);
+      memcpy(&flashedDevicesArray[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
+      //  memcpy(&dynScanSaveVal[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
+      // NRF_LOG_INFO("%d\t\t\t\t%s", savedFlashCnt, &dynScanSaveVal[savedFlashCnt].name);
       savedFlashCnt++; // savedFlashCnt now how many in flash memory
     }
-    return 1;
+    return savedFlashCnt;
   } else if (endMemoryPtr == 0) {
     NRF_LOG_INFO("Can't found saved devices. You must first scan.");
     return 0;
   }
 }
 
+void checkChangeID(uint16_t id) {
+  size_t i, j;
+  bool isMatch = false;
+  if (oldHRegID != id) {
+    oldHRegID = id;
+    for (i = 0; i < cntAll; i++) {
+      for (j = 0; j < 62; j++) {
+        if (HReg.workingScanVal[j].id == id)
+          isMatch = true;
+      }
+    }
+    if (false == isMatch) {
+    }
+  }
+}
+
 int main(void) {
   ret_code_t err_code;
+  uint8_t cnt = 0;
   // Initialize.
   log_init();
-
   nrf_libuarte_async_config_t nrf_libuarte_async_config1 = {.tx_pin =
                                                                 ARDUINO_0_PIN,
       .rx_pin = ARDUINO_1_PIN,
@@ -1355,21 +1426,27 @@ int main(void) {
       uart_event_handler1, (void *)&libuarte1);
   APP_ERROR_CHECK(err_code);
   nrf_libuarte_async_enable(&libuarte1);
-  Prot_Init(); //Инициализация протоколов
+
+  Config_Init(); //Чтение конфигурации из Flash
+  Prot_Init();   //Инициализация протоколов
+  for (size_t i = 0; i < 30; i++) {
+    memset(&flashedDevicesArray[i], 0, sizeof(SCANVAL));
+  }
+  HReg.cntScanVal = cntAll;
 
   // Start execution.
   printf("BLE UART central example started.\r\n");
   NRF_LOG_INFO("BLE UART central example started.");
   // scan_start ();
-  sBL_Cfg.mModbusAddress = 127;
+  // sBL_Cfg.mModbusAddress = 127;
 
   // Enter main loop.
-  for (;;) {
+  while (1) {
     Prot_Handler();
-    if (true == readWriteFlash) {
-      readWriteFlash = false;
-      readFlash();
-    }
+    //  if (true == readWriteFlash) {
+    //    readWriteFlash = false;
+    //     readFlash();
+    //   }
     Config_Handler();
     idle_state_handle();
   }

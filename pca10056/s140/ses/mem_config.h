@@ -8,6 +8,7 @@
 
 
 
+
 typedef struct{
 	BLParam					mBLParam;
 	uint8_t mReserved[ 256	- sizeof(uint32_t)//version confit in Flash

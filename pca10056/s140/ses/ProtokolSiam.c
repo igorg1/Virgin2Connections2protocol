@@ -30,7 +30,7 @@ eSiamError ProcessReadCmdSiam(ProtInstanse* pr, uint8_t* buf, uint8_t len,  uint
 	if(crc != *(uint16_t*)&pr->mBuf[10] )
 		return eWrongCrc;
 
-	if(MAX_PROT_LEN< qty+12+2)
+	if(MAX_PROT_LEN*16< qty+12+2)
 	{
 		return eWrongSize;
 	}
@@ -181,7 +181,7 @@ void FrameProcess_Saim(ProtInstanse* pr)
 	
 	if(addr_device == pr->addr)
 	{
-		__disable_irq();
+		//__disable_irq();
 		switch(ucFunctionCode)
 		{
 			default: break;
@@ -194,7 +194,7 @@ void FrameProcess_Saim(ProtInstanse* pr)
 		}
 		if(pr->sProtokolType == prMaster) pr->sExType = 1;
 		if(pr->sProtokolType == prSlave) pr->sExType = 0;
-		__enable_irq();
+		//__enable_irq();
 	}
 	else
 	{

@@ -208,13 +208,15 @@ void SysCtrl_Configurate(void) {
       //	APPCfg_Save();
       break;
     case ccApply:
-      //	ApplyCfg();
+      	ApplyCfg();
+      break;
+    case SAVE:
       break;
     case ccReboot:
       //bsp_board_led_off(1);
-      //	nrf_delay_ms(200);
-      //	err_code = sd_nvic_SystemReset();
-      //	APP_ERROR_CHECK(err_code);
+      	nrf_delay_ms(200);
+      	err_code = sd_nvic_SystemReset();
+      	APP_ERROR_CHECK(err_code);
       break;
     }
     sSysCtrl.mStatus++;

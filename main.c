@@ -520,9 +520,8 @@ static bool firstScan = true;
 static bool findMatch = false;
 volatile bool withName = false;
 volatile bool readWriteFlash = false;
-static uint8_t forCnt=0;
-uint8_t oldForCnt=0;
-
+static uint8_t forCnt = 0;
+uint8_t oldForCnt = 0;
 
 static void
 scan_evt_handler(scan_evt_t const *p_scan_evt) {
@@ -661,45 +660,27 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
     }
     scanMyCnt = i;
     // HReg.cntScanVal += scanMyCnt;
-    for (i = 0; i < 62; i++) {
-      memset(&HReg.workingScanVal[i], 0, sizeof(WORKINGSCANVAL));
-    }
     findUnique = false;
-    if (cntAll > 0) {
-      for (i = 0; i < cntAll; i++) {
-        findUnique = false;
-        for (int j = 0; j < scanMyCnt; j++) {
-          if (false == memcmp(flashedDevicesArray[i].peer_addr.addr, scanMy[j].peer_addr.addr, 6))
-            findUnique = true;
-        }
-        if (!findUnique) {
-        
-        }
-      }
-    }
-    else if (cntAll==0){//nothing in Flash
-    oldForCnt=forCnt;
-      for (i = 0; i < oldForCnt; i++) {
-        findUnique = false;
-        for (int j = 0; j < scanMyCnt; j++) {
-          if (false == memcmp(&HReg.workingScanVal[i].mac_addr, scanMy[j].peer_addr.addr, 6)){
-            findUnique = true;
-            }
-        }
-        if (!findUnique) {
-          memcpy(&HReg.workingScanVal[forCnt].mac_addr, scanMy[i].peer_addr.addr, 6);
-          memcpy(&HReg.workingScanVal[forCnt].name, scanMy[i].name, 20);
-          forCnt++;
+    if (cntAll == 0)
+      oldForCnt = scanMyCnt;
+    else
+      oldForCnt = cntAll;
+    for (i = 0; i < scanMyCnt; i++) {
+      findUnique = false;
+      for (int j = 0; j < oldForCnt; j++) {
+        if (false == memcmp(&HReg.workingScanVal[j].mac_addr, scanMy[i].peer_addr.addr, 6)) {
+          findUnique = true;
         }
       }
+      if (!findUnique) {
+        memcpy(&HReg.workingScanVal[cntAll].mac_addr, scanMy[i].peer_addr.addr, 6);
+        memcpy(&HReg.workingScanVal[cntAll].name, scanMy[i].name, 20);
+        cntAll++;
+      }
     }
-    // for (i = 0; i < scanMyCnt; i++) {
-    //    memcpy(&HReg.workingScanVal[i].mac_addr, scanMy[i].peer_addr.addr, 6);
-    //    memcpy(&HReg.workingScanVal[i].name, scanMy[i].name, 20);
-    //   }
-    //if flashMemory' storage empty - fill from 0 our array
+    HReg.cntScanVal = cntAll;
 
-     NRF_LOG_INFO("Read from Flash memory\r\n");
+    NRF_LOG_INFO("Read from Flash memory\r\n");
 
     //readWriteFlash = true;
 
@@ -1336,7 +1317,7 @@ void readFlash(void) {
     }
     for (j = 0; j < i; j++) {
       memset(&scanVal, 0, sizeof(SCANVAL));
-      scanVal.id_scan = j;
+     // scanVal.id_scan = j;
       memcpy(scanVal.name, scanMy[j].name, 20);
       memcpy(&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
       memcpy(&scanVal.p_conn_params, &scanMy[j].p_conn_params,
@@ -1394,6 +1375,12 @@ void checkChangeID(uint16_t id) {
   }
 }
 
+void saveScannedDev (void){
+//sort scanned array with non-zero ID
+//if is scanned array with non-zero - erase flash 
+//write scanned array
+}
+
 int main(void) {
   ret_code_t err_code;
   uint8_t cnt = 0;
@@ -1426,13 +1413,22 @@ int main(void) {
       uart_event_handler1, (void *)&libuarte1);
   APP_ERROR_CHECK(err_code);
   nrf_libuarte_async_enable(&libuarte1);
-
-  Config_Init(); //Чтение конфигурации из Flash
-  Prot_Init();   //Инициализация протоколов
-  for (size_t i = 0; i < 30; i++) {
+  for (size_t i = 0; i < 62; i++) {
     memset(&flashedDevicesArray[i], 0, sizeof(SCANVAL));
   }
+  for (size_t i = 0; i < 62; i++) {
+    memset(&HReg.workingScanVal[i], 0, sizeof(WORKINGSCANVAL));
+  }
+  Config_Init(); //Чтение конфигурации из Flash
+  Prot_Init();   //Инициализация протоколов
   HReg.cntScanVal = cntAll;
+  if (cntAll > 0) {
+    for (size_t i = 0; i < cntAll; i++) {
+      memcpy(&HReg.workingScanVal[i].mac_addr, &flashedDevicesArray[i].peer_addr.addr, 6);
+      memcpy(&HReg.workingScanVal[i].name, &flashedDevicesArray[i].name, 20);
+      memcpy(&HReg.workingScanVal[i].id, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
+    }
+  }
 
   // Start execution.
   printf("BLE UART central example started.\r\n");

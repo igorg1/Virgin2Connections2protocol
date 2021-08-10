@@ -80,6 +80,9 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_config.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
 #include "nrf_ble_qwr.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h"
+
+extern UART_ASSIGN connCurrent[62];
 
 typedef struct
 {
@@ -115,7 +118,7 @@ uint8_t modem1StrMB[8] = {0x7F, 0x03, 0x00, 0x00, 0x00, 0x01, 0x8E,
 uint8_t modem2Str[12] = {0x0d, 0x0a, 0x7F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02,
     0x00, 0x16, 0xCF}; // 0d0a7F0100000000020016CF
 
-uint16_t oldHRegID = 0;
+uint16_t oldHRegID = NULL;
 static bool firstScreen = false;
 static int8_t cntForConnect = 1;
 uint16_t savedFlashCnt = 0;
@@ -357,7 +360,7 @@ void uart_event_handler0(void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
     //      APP_ERROR_CHECK (ret_val);
     //    }
 
-    m_loopback_phase0 = true;
+  //  m_loopback_phase0 = true;
     break;
   case NRF_LIBUARTE_ASYNC_EVT_TX_DONE:
     uart0_tx_complete = true;
@@ -673,8 +676,12 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
         }
       }
       if (!findUnique) {
+      //HReg
         memcpy(&HReg.workingScanVal[cntAll].mac_addr, scanMy[i].peer_addr.addr, 6);
         memcpy(&HReg.workingScanVal[cntAll].name, scanMy[i].name, 20);
+
+      //ConCurrent
+        memcpy(&connCurrent[cntAll].addr,scanMy[i].peer_addr.addr, 6);
         cntAll++;
       }
     }
@@ -785,8 +792,8 @@ ble_nus_c_evt_handler(
     NRF_LOG_INFO("Receive N \t%x\r\n", p_ble_nus_c->conn_handle);
     err_code = nrf_libuarte_async_tx(
         &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
-    //  ble_nus_chars_received_uart_print_SIAM (
-    //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+      //ble_nus_chars_received_uart_print_SIAM (
+      //    p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
     //    ble_nus_chars_received_uart_print_MB (
     //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
     break;
@@ -1317,7 +1324,7 @@ void readFlash(void) {
     }
     for (j = 0; j < i; j++) {
       memset(&scanVal, 0, sizeof(SCANVAL));
-     // scanVal.id_scan = j;
+      // scanVal.id_scan = j;
       memcpy(scanVal.name, scanMy[j].name, 20);
       memcpy(&scanVal.con_cfg_tag, &scanMy[j].con_cfg_tag, 1);
       memcpy(&scanVal.p_conn_params, &scanMy[j].p_conn_params,
@@ -1359,26 +1366,10 @@ uint8_t readFlashDEE(void) {
   }
 }
 
-void checkChangeID(uint16_t id) {
-  size_t i, j;
-  bool isMatch = false;
-  if (oldHRegID != id) {
-    oldHRegID = id;
-    for (i = 0; i < cntAll; i++) {
-      for (j = 0; j < 62; j++) {
-        if (HReg.workingScanVal[j].id == id)
-          isMatch = true;
-      }
-    }
-    if (false == isMatch) {
-    }
-  }
-}
-
-void saveScannedDev (void){
-//sort scanned array with non-zero ID
-//if is scanned array with non-zero - erase flash 
-//write scanned array
+void saveScannedDev(void) {
+  //sort scanned array with non-zero ID
+  //if is scanned array with non-zero - erase flash
+  //write scanned array
 }
 
 int main(void) {
@@ -1406,7 +1397,6 @@ int main(void) {
   scan_init();
   err_code = nrf_libuarte_async_init(&libuarte0, &nrf_libuarte_async_config0,
       uart_event_handler0, (void *)&libuarte0);
-  // gLibuarte0 = &libuarte0;
   APP_ERROR_CHECK(err_code);
   nrf_libuarte_async_enable(&libuarte0);
   err_code = nrf_libuarte_async_init(&libuarte1, &nrf_libuarte_async_config1,
@@ -1419,14 +1409,26 @@ int main(void) {
   for (size_t i = 0; i < 62; i++) {
     memset(&HReg.workingScanVal[i], 0, sizeof(WORKINGSCANVAL));
   }
+  for (size_t i=0;i<8;i++){
+    connCurrent[i].connHandler=BLE_CONN_HANDLE_INVALID;
+  }
   Config_Init(); //Чтение конфигурации из Flash
   Prot_Init();   //Инициализация протоколов
   HReg.cntScanVal = cntAll;
   if (cntAll > 0) {
     for (size_t i = 0; i < cntAll; i++) {
+    //HReg
       memcpy(&HReg.workingScanVal[i].mac_addr, &flashedDevicesArray[i].peer_addr.addr, 6);
       memcpy(&HReg.workingScanVal[i].name, &flashedDevicesArray[i].name, 20);
       memcpy(&HReg.workingScanVal[i].id, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
+    //ConnCurrent
+    memcpy(&connCurrent[i].addr, &flashedDevicesArray[i].peer_addr.addr, 6);
+    memcpy(&connCurrent[i].p_conn_params, &flashedDevicesArray[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+    memcpy(&connCurrent[i].p_scan_params, &flashedDevicesArray[i].p_scan_params, sizeof(ble_gap_scan_params_t));
+    memcpy(&connCurrent[i].id_scan, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
+    memcpy(&connCurrent[i].con_cfg_tag, &flashedDevicesArray[i].con_cfg_tag, sizeof(uint8_t));
+    memcpy(connCurrent[i].name, &flashedDevicesArray[i].name, 20);
+
     }
   }
 
@@ -1439,10 +1441,6 @@ int main(void) {
   // Enter main loop.
   while (1) {
     Prot_Handler();
-    //  if (true == readWriteFlash) {
-    //    readWriteFlash = false;
-    //     readFlash();
-    //   }
     Config_Handler();
     idle_state_handle();
   }

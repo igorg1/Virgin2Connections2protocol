@@ -73,6 +73,15 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/uart.o: \
  ../../../../../../components/libraries/timer/app_timer.h \
  ../../../../../../components/libraries/util/app_error.h \
  ../../../../../../components/libraries/sortlist/nrf_sortlist.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_config.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_device.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_modem.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_commstruct.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_application.h \
+ ../../../../../../components/softdevice/s140/headers/ble_gap.h \
+ ../../../../../../components/softdevice/s140/headers/ble_hci.h \
+ ../../../../../../components/softdevice/s140/headers/ble_ranges.h \
+ ../../../../../../components/softdevice/s140/headers/ble_types.h \
+ ../../../../../../components/softdevice/s140/headers/ble_err.h \
  c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\protokolmbstruct.h \
- c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h \
- C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h
+ c\:\nordiccurrentsdk\nrf5sdk1702d674dde\nrf5_sdk_17.0.2_d674dde\examples\ble_app_uart_c_jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h

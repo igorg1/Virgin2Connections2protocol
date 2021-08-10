@@ -46,6 +46,6 @@ typedef struct
   // BluetoothCfg	mBluetoothCfg;
   ProtocolCfg mProtocolCfg;
   UartCfg mUartCfg;
-} __attribute__ ((aligned (4))) ModemParam;
+} __attribute__ ((aligned (2))) ModemParam;
 
 #endif

@@ -59,7 +59,7 @@ typedef struct
 	uint32_t	AppSize;
 	uint16_t	AppCrc;
 	uint16_t	Sd_Version;
-	uint16_t	Reserved[3];
+	uint16_t	meserved[3];
 } __attribute__((aligned(2),packed)) BLConfig;// 18
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

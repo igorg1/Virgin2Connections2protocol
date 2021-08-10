@@ -28,11 +28,12 @@ typedef struct
   ProtokolType sProtokolType;
   uint8_t sExType;
   ProtokolState state;
-  uint8_t mBuf[MAX_PROT_LEN * 16];
+  uint8_t mBuf[MAX_PROT_LEN * 16];//3-address+CRC  + 2 bytes - 0d0a
   uint16_t mLen;
   uint16_t idxIn;
   uint16_t idxOut;
   void *queue_adrr;
+  uint8_t sconn_handle;
 } ProtInstanse;
 //-----------------------------------------------------------------------------
 void Prot_Init (void);

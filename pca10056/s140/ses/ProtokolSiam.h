@@ -3,12 +3,24 @@
 //-----------------------------------------------------------------------------
 #include "ProtokolSiamStruct.h"
 #include "exchenge.h"
+#include "ble_gap.h"
 //-----------------------------------------------------------------------------
 typedef enum
 {
 	SIAM_REG_READ,								/*!< Read register values and pass to protocol stack. */
 	SIAM_REG_WRITE								/*!< Update register values. */
 } eSiamRegisterMode;
+
+typedef struct
+{
+  uint8_t addr[6];
+  uint16_t id_scan;
+  uint16_t connHandler;
+  ble_gap_conn_params_t p_conn_params;
+  ble_gap_scan_params_t p_scan_params;
+  uint8_t con_cfg_tag;
+  char name[20];
+} UART_ASSIGN;
 //-----------------------------------------------------------------------------
 #define GETREG_start( mb_addr_offset, addr_reg, len, type, var )											\
 		if((uint32_t)(mb_addr_offset+sizeof(type))>= addr_reg+len )											\
@@ -32,6 +44,8 @@ void DoReceive_Siam(void* prot, void* buf, uint16_t len);
 void OnTxCompleate_Siam(void*);
 //-----------------------------------------------------------------------------
 void Siam_Handler(ProtInstanse* prot, Exchange* ex);
+
+void change_address(ProtInstanse *pr);
 //-----------------------------------------------------------------------------
 #endif
 //-----------------------------------------------------------------------------

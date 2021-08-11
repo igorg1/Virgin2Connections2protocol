@@ -13,7 +13,7 @@ typedef enum
 
 typedef struct
 {
-  uint8_t addr[6];
+  ble_gap_addr_t addr;
   uint16_t id_scan;
   uint16_t connHandler;
   ble_gap_conn_params_t p_conn_params;

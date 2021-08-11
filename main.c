@@ -83,6 +83,7 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h"
 
 extern UART_ASSIGN connCurrent[62];
+bool isConnectedBle=false;
 
 typedef struct
 {
@@ -677,11 +678,15 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
       }
       if (!findUnique) {
       //HReg
-        memcpy(&HReg.workingScanVal[cntAll].mac_addr, scanMy[i].peer_addr.addr, 6);
-        memcpy(&HReg.workingScanVal[cntAll].name, scanMy[i].name, 20);
+        memcpy(&HReg.workingScanVal[cntAll].mac_addr, &scanMy[i].peer_addr.addr, 6);
+        memcpy(&HReg.workingScanVal[cntAll].name, &scanMy[i].name, 20);
 
       //ConCurrent
-        memcpy(&connCurrent[cntAll].addr,scanMy[i].peer_addr.addr, 6);
+        memcpy(&connCurrent[cntAll].addr,&scanMy[i].peer_addr, sizeof(ble_gap_addr_t));
+        memcpy(&connCurrent[cntAll].con_cfg_tag,&scanMy[i].con_cfg_tag, sizeof(uint8_t));
+        memcpy(&connCurrent[cntAll].name,scanMy[i].name, 20);
+        memcpy(&connCurrent[cntAll].p_conn_params,&scanMy[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+        memcpy(&connCurrent[cntAll].p_scan_params,&scanMy[i].p_scan_params, sizeof(ble_gap_scan_params_t));
         cntAll++;
       }
     }
@@ -868,12 +873,13 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
     APP_ERROR_CHECK(err_code);
 
     NRF_LOG_INFO("Connected. conn_handle: 0x%x", p_gap_evt->conn_handle);
+    isConnectedBle=true;
 
-    if (ble_conn_state_central_conn_count() <
-        NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
+   // if (ble_conn_state_central_conn_count() <
+  //      NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
       // Resume scanning.
       //          scan_start ();
-    }
+   // }
     break;
 
   case BLE_GAP_EVT_DISCONNECTED:
@@ -1024,7 +1030,7 @@ void bsp_event_handler(bsp_event_t event) {
   case BSP_EVENT_KEY_0: {
     // NRF_LOG_INFO ("BSP_EVENT_KEY_0");
     NRF_LOG_INFO("Scan start");
-    scan_start();
+   // scan_start();
     //  for (int i = 0; i < cntConnect; i++)
     //     {
     //      if (false ==
@@ -1040,13 +1046,13 @@ void bsp_event_handler(bsp_event_t event) {
   } break;
 
   case BSP_EVENT_KEY_1: {
-    if (!firstScreen) {
-      firstScreen = true;
-      readFlashDEE();
-    }
+  //  if (!firstScreen) {
+   //   firstScreen = true;
+  //    readFlashDEE();
+   // }
     cntForConnect++;
-    if (cntForConnect > (savedFlashCnt - 1))
-      cntForConnect = 0;
+   // if (cntForConnect > (savedFlashCnt - 1))
+   //   cntForConnect = 0;
     NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
 
     /* begin section*/
@@ -1094,10 +1100,10 @@ void bsp_event_handler(bsp_event_t event) {
 
   } break;
   case BSP_EVENT_KEY_2: {
-    if (!firstScreen) {
-      firstScreen = true;
-      readFlashDEE();
-    }
+   // if (!firstScreen) {
+   //   firstScreen = true;
+   //   readFlashDEE();
+   // }
     cntForConnect--;
     if (cntForConnect < 0)
       cntForConnect = (savedFlashCnt - 1);
@@ -1145,12 +1151,13 @@ void bsp_event_handler(bsp_event_t event) {
     //                       6)) // modemDDIM180
     //      {
     //       NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
-    //        err_code = sd_ble_gap_connect(&scanMy[i].peer_addr,
-    //            &scanMy[i].p_scan_params, &scanMy[i].p_conn_params,
-    //            scanMy[i].con_cfg_tag);
-    //        APP_ERROR_CHECK(err_code);
+            err_code = sd_ble_gap_connect(&scanMy[1].peer_addr,
+                &scanMy[1].p_scan_params, &scanMy[1].p_conn_params,
+                scanMy[1].con_cfg_tag);
+            APP_ERROR_CHECK(err_code);
     //      }
     /*end section*/
+    
   }
   // do
   //    {
@@ -1422,7 +1429,7 @@ int main(void) {
       memcpy(&HReg.workingScanVal[i].name, &flashedDevicesArray[i].name, 20);
       memcpy(&HReg.workingScanVal[i].id, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
     //ConnCurrent
-    memcpy(&connCurrent[i].addr, &flashedDevicesArray[i].peer_addr.addr, 6);
+    memcpy(&connCurrent[i].addr, &flashedDevicesArray[i].peer_addr, sizeof(ble_gap_addr_t));
     memcpy(&connCurrent[i].p_conn_params, &flashedDevicesArray[i].p_conn_params, sizeof(ble_gap_conn_params_t));
     memcpy(&connCurrent[i].p_scan_params, &flashedDevicesArray[i].p_scan_params, sizeof(ble_gap_scan_params_t));
     memcpy(&connCurrent[i].id_scan, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));

@@ -4,8 +4,9 @@
 #include "nrf_log.h"
 #include <string.h>
 
-UART_ASSIGN connCurrent[8];
+UART_ASSIGN connCurrent[62];
 extern uint8_t cntAll;
+extern bool isConnectedBle;
 
 //-----------------------------------------------------------------------------
 eSiamError ProcessWriteCmdSiam(ProtInstanse *pr, uint8_t *buf, uint8_t len, uint8_t addr_device, uint32_t addr_reg, uint16_t qty) {
@@ -64,18 +65,30 @@ void ErrorResponseSiam(ProtInstanse *pr, eSiamError eException) {
 }
 
 void change_address(ProtInstanse *pr) {
-  uint8_t conn;
+  uint8_t IDscan;
+  ret_code_t err_code;
   if (true == (pr->mBuf[2] & 0x01)) {
-    conn = (pr->mBuf[2] + 1) / 2;
+    IDscan = (pr->mBuf[2] + 1) / 2;
   } else
-    conn =pr->mBuf[2] / 2;
-  if (connCurrent[conn].connHandler == BLE_CONN_HANDLE_INVALID) {
-    for (size_t i = 0; i < 8; i++) {
-
+    IDscan = pr->mBuf[2] / 2;
+  for (size_t i = 0; i < 62; i++) {
+    if (connCurrent[i].id_scan == IDscan) {
+      if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
+        isConnectedBle=false;
+        err_code = sd_ble_gap_connect(&connCurrent[i].addr,
+            &connCurrent[i].p_scan_params, &connCurrent[i].p_conn_params,
+            connCurrent[i].con_cfg_tag);
+        APP_ERROR_CHECK(err_code);
+      }
+      do {
+        __WFE();
+      } while (!isConnectedBle);
+     // connCurrent[i].connHandler=p_gap_evt->conn_handle;//@TODO
+      break;
     }
   }
-  pr->sconn_handle = conn; //@TODO - add in ProtInstanse sconn_handle - DONE
-  pr->mBuf[2] = 01;        //127
+  pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse sconn_handle - DONE
+ // pr->mBuf[2] = 01;        //127
   uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 10);
   memcpy(pr->mBuf + 10, &crc, 2); //+
 }
@@ -258,6 +271,5 @@ void Siam_Handler(ProtInstanse *pr, Exchange *ex) {
     break;
   }
 }
-
 
 //-----------------------------------------------------------------------------

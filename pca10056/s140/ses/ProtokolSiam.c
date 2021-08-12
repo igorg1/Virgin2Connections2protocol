@@ -7,6 +7,7 @@
 UART_ASSIGN connCurrent[62];
 extern uint8_t cntAll;
 extern bool isConnectedBle;
+extern uint16_t bleConnNumber;
 
 //-----------------------------------------------------------------------------
 eSiamError ProcessWriteCmdSiam(ProtInstanse *pr, uint8_t *buf, uint8_t len, uint8_t addr_device, uint32_t addr_reg, uint16_t qty) {
@@ -71,6 +72,12 @@ void change_address(ProtInstanse *pr) {
     IDscan = (pr->mBuf[2] + 1) / 2;
   } else
     IDscan = pr->mBuf[2] / 2;
+  for (size_t i=0;i<62;i++){
+    if(HReg.workingScanVal[i].id==IDscan) {
+    connCurrent[i].id_scan=IDscan;
+    break;
+    }
+  }
   for (size_t i = 0; i < 62; i++) {
     if (connCurrent[i].id_scan == IDscan) {
       if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
@@ -83,7 +90,7 @@ void change_address(ProtInstanse *pr) {
       do {
         __WFE();
       } while (!isConnectedBle);
-     // connCurrent[i].connHandler=p_gap_evt->conn_handle;//@TODO
+      connCurrent[i].connHandler=bleConnNumber;
       break;
     }
   }

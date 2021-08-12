@@ -211,6 +211,7 @@ void SysCtrl_Configurate(void) {
       	ApplyCfg();
       break;
     case SAVE:
+      saveScannedDev();
       break;
     case ccReboot:
       //bsp_board_led_off(1);

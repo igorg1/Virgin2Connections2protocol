@@ -73,6 +73,7 @@
 
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h"
+#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Utils.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy_handler.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h"
@@ -80,10 +81,10 @@
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_config.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h"
 #include "nrf_ble_qwr.h"
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h"
 
 extern UART_ASSIGN connCurrent[62];
-bool isConnectedBle=false;
+bool isConnectedBle = false;
+uint16_t bleConnNumber = BLE_CONN_HANDLE_INVALID;
 
 typedef struct
 {
@@ -361,7 +362,7 @@ void uart_event_handler0(void *context, nrf_libuarte_async_evt_t *p_evt) // Siam
     //      APP_ERROR_CHECK (ret_val);
     //    }
 
-  //  m_loopback_phase0 = true;
+    //  m_loopback_phase0 = true;
     break;
   case NRF_LIBUARTE_ASYNC_EVT_TX_DONE:
     uart0_tx_complete = true;
@@ -677,16 +678,16 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
         }
       }
       if (!findUnique) {
-      //HReg
+        //HReg
         memcpy(&HReg.workingScanVal[cntAll].mac_addr, &scanMy[i].peer_addr.addr, 6);
         memcpy(&HReg.workingScanVal[cntAll].name, &scanMy[i].name, 20);
 
-      //ConCurrent
-        memcpy(&connCurrent[cntAll].addr,&scanMy[i].peer_addr, sizeof(ble_gap_addr_t));
-        memcpy(&connCurrent[cntAll].con_cfg_tag,&scanMy[i].con_cfg_tag, sizeof(uint8_t));
-        memcpy(&connCurrent[cntAll].name,scanMy[i].name, 20);
-        memcpy(&connCurrent[cntAll].p_conn_params,&scanMy[i].p_conn_params, sizeof(ble_gap_conn_params_t));
-        memcpy(&connCurrent[cntAll].p_scan_params,&scanMy[i].p_scan_params, sizeof(ble_gap_scan_params_t));
+        //ConCurrent
+        memcpy(&connCurrent[cntAll].addr, &scanMy[i].peer_addr, sizeof(ble_gap_addr_t));
+        memcpy(&connCurrent[cntAll].con_cfg_tag, &scanMy[i].con_cfg_tag, sizeof(uint8_t));
+        memcpy(&connCurrent[cntAll].name, scanMy[i].name, 20);
+        memcpy(&connCurrent[cntAll].p_conn_params, &scanMy[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+        memcpy(&connCurrent[cntAll].p_scan_params, &scanMy[i].p_scan_params, sizeof(ble_gap_scan_params_t));
         cntAll++;
       }
     }
@@ -797,8 +798,8 @@ ble_nus_c_evt_handler(
     NRF_LOG_INFO("Receive N \t%x\r\n", p_ble_nus_c->conn_handle);
     err_code = nrf_libuarte_async_tx(
         &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
-      //ble_nus_chars_received_uart_print_SIAM (
-      //    p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+    //ble_nus_chars_received_uart_print_SIAM (
+    //    p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
     //    ble_nus_chars_received_uart_print_MB (
     //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
     break;
@@ -873,19 +874,26 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
     APP_ERROR_CHECK(err_code);
 
     NRF_LOG_INFO("Connected. conn_handle: 0x%x", p_gap_evt->conn_handle);
-    isConnectedBle=true;
+    bleConnNumber = p_gap_evt->conn_handle;
+    isConnectedBle = true;
 
-   // if (ble_conn_state_central_conn_count() <
-  //      NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
-      // Resume scanning.
-      //          scan_start ();
-   // }
+    // if (ble_conn_state_central_conn_count() <
+    //      NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
+    // Resume scanning.
+    //          scan_start ();
+    // }
     break;
 
   case BLE_GAP_EVT_DISCONNECTED:
 
     NRF_LOG_INFO("Disconnected. conn_handle: 0x%x, reason: 0x%x",
         p_gap_evt->conn_handle, p_gap_evt->params.disconnected.reason);
+    for (size_t i = 0; i < 62; i++) {
+      if (connCurrent[i].connHandler == p_gap_evt->conn_handle) {
+        connCurrent[i].connHandler = BLE_CONN_HANDLE_INVALID;
+      }
+    }
+
     break;
 
   case BLE_GAP_EVT_TIMEOUT:
@@ -1030,7 +1038,7 @@ void bsp_event_handler(bsp_event_t event) {
   case BSP_EVENT_KEY_0: {
     // NRF_LOG_INFO ("BSP_EVENT_KEY_0");
     NRF_LOG_INFO("Scan start");
-   // scan_start();
+    // scan_start();
     //  for (int i = 0; i < cntConnect; i++)
     //     {
     //      if (false ==
@@ -1046,13 +1054,13 @@ void bsp_event_handler(bsp_event_t event) {
   } break;
 
   case BSP_EVENT_KEY_1: {
-  //  if (!firstScreen) {
-   //   firstScreen = true;
-  //    readFlashDEE();
-   // }
+    //  if (!firstScreen) {
+    //   firstScreen = true;
+    //    readFlashDEE();
+    // }
     cntForConnect++;
-   // if (cntForConnect > (savedFlashCnt - 1))
-   //   cntForConnect = 0;
+    // if (cntForConnect > (savedFlashCnt - 1))
+    //   cntForConnect = 0;
     NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
 
     /* begin section*/
@@ -1100,10 +1108,10 @@ void bsp_event_handler(bsp_event_t event) {
 
   } break;
   case BSP_EVENT_KEY_2: {
-   // if (!firstScreen) {
-   //   firstScreen = true;
-   //   readFlashDEE();
-   // }
+    // if (!firstScreen) {
+    //   firstScreen = true;
+    //   readFlashDEE();
+    // }
     cntForConnect--;
     if (cntForConnect < 0)
       cntForConnect = (savedFlashCnt - 1);
@@ -1151,13 +1159,13 @@ void bsp_event_handler(bsp_event_t event) {
     //                       6)) // modemDDIM180
     //      {
     //       NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
-            err_code = sd_ble_gap_connect(&scanMy[1].peer_addr,
-                &scanMy[1].p_scan_params, &scanMy[1].p_conn_params,
-                scanMy[1].con_cfg_tag);
-            APP_ERROR_CHECK(err_code);
+    err_code = sd_ble_gap_connect(&scanMy[1].peer_addr,
+        &scanMy[1].p_scan_params, &scanMy[1].p_conn_params,
+        scanMy[1].con_cfg_tag);
+    APP_ERROR_CHECK(err_code);
     //      }
     /*end section*/
-    
+
   }
   // do
   //    {
@@ -1374,9 +1382,25 @@ uint8_t readFlashDEE(void) {
 }
 
 void saveScannedDev(void) {
-  //sort scanned array with non-zero ID
-  //if is scanned array with non-zero - erase flash
-  //write scanned array
+  uint16_t savedCnt;
+  savedCnt = readFlashDEE();
+  if (savedCnt > 0)
+    flash_erase(&fstorage_cfg, FLASH_DEECFG_START_ADDR);
+  for (size_t i = 0; i < 62; i++) {
+    if (connCurrent[i].id_scan != BLE_CONN_HANDLE_INVALID) {
+      memset(&scanVal, 0, sizeof(SCANVAL));
+      memcpy(&scanVal.id_scan, &connCurrent[i].id_scan, sizeof(uint16_t));
+      memcpy(&scanVal.con_cfg_tag, &connCurrent[i].con_cfg_tag, sizeof(uint8_t));
+      memcpy(&scanVal.name,connCurrent[i].name,20);
+      memcpy(&scanVal.p_conn_params, &connCurrent[i].p_conn_params,
+          sizeof(ble_gap_conn_params_t));
+      memcpy(&scanVal.p_scan_params, &connCurrent[i].p_scan_params,
+          sizeof(ble_gap_scan_params_t));
+      memcpy(&scanVal.peer_addr, &connCurrent[i].addr, sizeof(ble_gap_addr_t));
+      Flash_SaveStor(FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR,
+          sizeof(SCANVAL), (uint32_t *)&scanVal);
+    }
+  }
 }
 
 int main(void) {
@@ -1416,26 +1440,25 @@ int main(void) {
   for (size_t i = 0; i < 62; i++) {
     memset(&HReg.workingScanVal[i], 0, sizeof(WORKINGSCANVAL));
   }
-  for (size_t i=0;i<8;i++){
-    connCurrent[i].connHandler=BLE_CONN_HANDLE_INVALID;
+  for (size_t i = 0; i < 8; i++) {
+    connCurrent[i].connHandler = BLE_CONN_HANDLE_INVALID;
   }
   Config_Init(); //Чтение конфигурации из Flash
   Prot_Init();   //Инициализация протоколов
   HReg.cntScanVal = cntAll;
   if (cntAll > 0) {
     for (size_t i = 0; i < cntAll; i++) {
-    //HReg
+      //HReg
       memcpy(&HReg.workingScanVal[i].mac_addr, &flashedDevicesArray[i].peer_addr.addr, 6);
       memcpy(&HReg.workingScanVal[i].name, &flashedDevicesArray[i].name, 20);
       memcpy(&HReg.workingScanVal[i].id, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
-    //ConnCurrent
-    memcpy(&connCurrent[i].addr, &flashedDevicesArray[i].peer_addr, sizeof(ble_gap_addr_t));
-    memcpy(&connCurrent[i].p_conn_params, &flashedDevicesArray[i].p_conn_params, sizeof(ble_gap_conn_params_t));
-    memcpy(&connCurrent[i].p_scan_params, &flashedDevicesArray[i].p_scan_params, sizeof(ble_gap_scan_params_t));
-    memcpy(&connCurrent[i].id_scan, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
-    memcpy(&connCurrent[i].con_cfg_tag, &flashedDevicesArray[i].con_cfg_tag, sizeof(uint8_t));
-    memcpy(connCurrent[i].name, &flashedDevicesArray[i].name, 20);
-
+      //ConnCurrent
+      memcpy(&connCurrent[i].addr, &flashedDevicesArray[i].peer_addr, sizeof(ble_gap_addr_t));
+      memcpy(&connCurrent[i].p_conn_params, &flashedDevicesArray[i].p_conn_params, sizeof(ble_gap_conn_params_t));
+      memcpy(&connCurrent[i].p_scan_params, &flashedDevicesArray[i].p_scan_params, sizeof(ble_gap_scan_params_t));
+      memcpy(&connCurrent[i].id_scan, &flashedDevicesArray[i].id_scan, sizeof(uint16_t));
+      memcpy(&connCurrent[i].con_cfg_tag, &flashedDevicesArray[i].con_cfg_tag, sizeof(uint8_t));
+      memcpy(connCurrent[i].name, &flashedDevicesArray[i].name, 20);
     }
   }
 

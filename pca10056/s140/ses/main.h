@@ -20,7 +20,7 @@
 
 
 void scan_start(void);
-uint8_t readFlashDEE(void);
+uint16_t readFlashDEE(void);
 void checkChangeID (uint16_t id);
 void saveScannedDev (void);
 

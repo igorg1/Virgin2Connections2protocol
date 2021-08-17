@@ -70,8 +70,11 @@ void change_address(ProtInstanse *pr) {
   ret_code_t err_code;
   if (true == (pr->mBuf[2] & 0x01)) {
     IDscan = (pr->mBuf[2] + 1) / 2;
-  } else
+    pr->mBuf[2]=01;
+  } else{
     IDscan = pr->mBuf[2] / 2;
+    pr->mBuf[2]=127;
+    }
   for (size_t i=0;i<62;i++){
     if(HReg.workingScanVal[i].id==IDscan) {
     connCurrent[i].id_scan=IDscan;
@@ -94,9 +97,8 @@ void change_address(ProtInstanse *pr) {
       break;
     }
   }
-  pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse sconn_handle - DONE
- // pr->mBuf[2] = 01;        //127
-  uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 10);
+  pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
+  uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
   memcpy(pr->mBuf + 10, &crc, 2); //+
 }
 //-----------------------------------------------------------------------------
@@ -230,7 +232,6 @@ void FrameProcess_Saim(ProtInstanse *pr) {
       pr->sExType = 0;
     if (pr->sProtokolType == prSlave)
       pr->sExType = 1;
-    //     forward_packets (pr->addr);//forward_packets(pr);
     return;
   }
 

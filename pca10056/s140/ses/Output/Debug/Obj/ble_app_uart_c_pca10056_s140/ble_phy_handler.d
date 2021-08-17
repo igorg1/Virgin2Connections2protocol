@@ -82,7 +82,56 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/ble_phy_handler.o: \
  ../../../../../../components/ble/nrf_ble_gatt/nrf_ble_gatt.h \
  ../../../../../../components/ble/nrf_ble_qwr/nrf_ble_qwr.h \
  ../../../../../../components/softdevice/s140/headers/ble_hci.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\main.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_config.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_device.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_modem.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_commstruct.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\mem_application.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMb.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiamStruct.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Utils.h \
+ ../../../../../../components/libraries/util/app_error.h \
+ ../../../../../../components/libraries/crc32/crc32.h \
+ ../../../../../../components/libraries/fstorage/nrf_fstorage.h \
+ ../../../../../../components/libraries/fstorage/nrf_fstorage_sd.h \
+ ../../../../../../components/libraries/fstorage/nrf_fstorage.h \
  ../../../../../../components/libraries/log/nrf_log.h \
  ../../../../../../components/libraries/strerror/nrf_strerror.h \
  ../../../../../../components/libraries/log/src/nrf_log_internal.h \
- ../../../../../../components/libraries/log/nrf_log_types.h
+ ../../../../../../components/libraries/log/nrf_log_types.h \
+ ../../../../../../modules/nrfx/hal/nrf_power.h \
+ ../../../../../../modules/nrfx/nrfx.h \
+ ../../../../../../integration/nrfx/nrfx_config.h \
+ ../../../../../../modules/nrfx/drivers/nrfx_common.h \
+ ../../../../../../modules/nrfx/mdk/nrf_peripherals.h \
+ ../../../../../../modules/nrfx/mdk/nrf52840_peripherals.h \
+ ../../../../../../integration/nrfx/nrfx_glue.h \
+ ../../../../../../integration/nrfx/legacy/apply_old_config.h \
+ ../../../../../../modules/nrfx/soc/nrfx_irqs.h \
+ ../../../../../../modules/nrfx/soc/nrfx_irqs_nrf52840.h \
+ ../../../../../../modules/nrfx/soc/nrfx_coredep.h \
+ ../../../../../../modules/nrfx/soc/nrfx_atomic.h \
+ ../../../../../../components/libraries/util/sdk_resources.h \
+ ../../../../../../components/softdevice/s140/headers/nrf_sd_def.h \
+ ../../../../../../components/softdevice/s140/headers/nrf_soc.h \
+ ../../../../../../modules/nrfx/drivers/nrfx_errors.h \
+ ../../../../../../components/libraries/pwr_mgmt/nrf_pwr_mgmt.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\uart.h \
+ ../../../../../../components/libraries/libuarte/nrf_libuarte_async.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_ppi.h \
+ ../../../../../../modules/nrfx/hal/nrf_ppi.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_timer.h \
+ ../../../../../../modules/nrfx/hal/nrf_timer.h \
+ ../../../../../../modules/nrfx/drivers/include/nrfx_rtc.h \
+ ../../../../../../modules/nrfx/hal/nrf_rtc.h \
+ ../../../../../../components/libraries/libuarte/nrf_libuarte_drv.h \
+ ../../../../../../modules/nrfx/hal/nrf_uarte.h \
+ ../../../../../../modules/nrfx/hal/nrf_uarte.h \
+ ../../../../../../components/libraries/timer/app_timer.h \
+ ../../../../../../components/libraries/sortlist/nrf_sortlist.h

@@ -124,7 +124,7 @@ uint16_t oldHRegID = NULL;
 static bool firstScreen = false;
 static int8_t cntForConnect = 1;
 uint16_t savedFlashCnt = 0;
-uint8_t readFlashDEE(void);
+//uint16_t readFlashDEE(void);
 /* LibUARTE section begin */
 NRF_LIBUARTE_ASYNC_DEFINE(libuarte0, 0, 1, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
     NRF_LIBUARTE_PERIPHERAL_NOT_USED, 1024, 3); // UARTE0 is Siam
@@ -1112,10 +1112,10 @@ void bsp_event_handler(bsp_event_t event) {
     //   firstScreen = true;
     //   readFlashDEE();
     // }
-    cntForConnect--;
-    if (cntForConnect < 0)
-      cntForConnect = (savedFlashCnt - 1);
-    NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
+  //  cntForConnect--;
+  //  if (cntForConnect < 0)
+ //     cntForConnect = (savedFlashCnt - 1);
+ //   NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
 
     /* begin section*/
     //  NRF_LOG_INFO ("Read from Flash memory");
@@ -1131,21 +1131,21 @@ void bsp_event_handler(bsp_event_t event) {
     //    NRF_LOG_INFO ("Test");
     /*end section*/
 
-    // NRF_LOG_INFO ("BSP_EVENT_KEY_2");
-    // do
-    //   {
-    //     ret_val =
-    //         ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
-    //     if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
-    //         (ret_val != NRF_ERROR_INVALID_STATE))
-    //       {
-    //         NRF_LOG_ERROR (
-    //             "Failed sending NUS message. Error 0x%x. ", ret_val);
-    //         APP_ERROR_CHECK (ret_val);
-    //       }
+     NRF_LOG_INFO ("BSP_EVENT_KEY_2");
+     do
+       {
+         ret_val =
+             ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
+         if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
+             (ret_val != NRF_ERROR_INVALID_STATE))
+           {
+             NRF_LOG_ERROR (
+                 "Failed sending NUS message. Error 0x%x. ", ret_val);
+             APP_ERROR_CHECK (ret_val);
+           }
 
-    //  }
-    // while (ret_val == NRF_ERROR_BUSY);
+      }
+     while (ret_val == NRF_ERROR_BUSY);
   } break;
   case BSP_EVENT_KEY_3: {
     //  NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
@@ -1171,7 +1171,7 @@ void bsp_event_handler(bsp_event_t event) {
   //    {
   //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
   //      modem1StrMB,
-  //          8); // ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+         //   8);//  ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
   //          modem2Str,
   // 12);
   //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
@@ -1356,19 +1356,15 @@ void readFlash(void) {
   // NRFX_DELAY_US(1);
 }
 
-uint8_t readFlashDEE(void) {
+uint16_t readFlashDEE(void) {
   // int i, j;
   uint32_t m = 0;
+  savedFlashCnt = 0;
+
   uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
       FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
-  if (endMemoryPtr > FLASH_DEECFG_START_ADDR) { //something in the flash
-                                                //   i = (int)(endMemoryPtr - FLASH_DEECFG_START_ADDR);
-                                                //   i = i / 0x40;
-                                                // dynScanSaveVal = (SCANVAL *)calloc(i, sizeof(SCANVAL));
-                                                // if (dynScanSaveVal == NULL)
-                                                //   NRF_LOG_INFO("Error. Can't work further");
-    savedFlashCnt = 0;
-    for (m = FLASH_DEECFG_START_ADDR; m < endMemoryPtr; m += 0x40) {
+  if (endMemoryPtr >= FLASH_DEECFG_START_ADDR) { //something in the flash                                           
+    for (m = FLASH_DEECFG_START_ADDR; m <= endMemoryPtr; m += 0x40) {
       memcpy(&flashedDevicesArray[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
       //  memcpy(&dynScanSaveVal[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
       // NRF_LOG_INFO("%d\t\t\t\t%s", savedFlashCnt, &dynScanSaveVal[savedFlashCnt].name);
@@ -1387,9 +1383,9 @@ void saveScannedDev(void) {
   if (savedCnt > 0)
     flash_erase(&fstorage_cfg, FLASH_DEECFG_START_ADDR);
   for (size_t i = 0; i < 62; i++) {
-    if (connCurrent[i].id_scan != BLE_CONN_HANDLE_INVALID) {
+    if (HReg.workingScanVal[i].id != 0x0) {
       memset(&scanVal, 0, sizeof(SCANVAL));
-      memcpy(&scanVal.id_scan, &connCurrent[i].id_scan, sizeof(uint16_t));
+      memcpy(&scanVal.id_scan, &HReg.workingScanVal[i].id, sizeof(uint16_t));
       memcpy(&scanVal.con_cfg_tag, &connCurrent[i].con_cfg_tag, sizeof(uint8_t));
       memcpy(&scanVal.name,connCurrent[i].name,20);
       memcpy(&scanVal.p_conn_params, &connCurrent[i].p_conn_params,

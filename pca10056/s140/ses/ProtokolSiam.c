@@ -70,30 +70,32 @@ void change_address(ProtInstanse *pr) {
   ret_code_t err_code;
   if (true == (pr->mBuf[2] & 0x01)) {
     IDscan = (pr->mBuf[2] + 1) / 2;
-    pr->mBuf[2]=01;
-  } else{
+    pr->mBuf[2] = 01;
+  } else {
     IDscan = pr->mBuf[2] / 2;
-    pr->mBuf[2]=127;
-    }
-  for (size_t i=0;i<62;i++){
-    if(HReg.workingScanVal[i].id==IDscan) {
-    connCurrent[i].id_scan=IDscan;
-    break;
+    pr->mBuf[2] = 127;
+  }
+  for (size_t i = 0; i < 62; i++) {
+    if (HReg.workingScanVal[i].id == IDscan) {
+      connCurrent[i].id_scan = IDscan;
+      break;
     }
   }
   for (size_t i = 0; i < 62; i++) {
     if (connCurrent[i].id_scan == IDscan) {
       if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
-        isConnectedBle=false;
+        isConnectedBle = false;
         err_code = sd_ble_gap_connect(&connCurrent[i].addr,
             &connCurrent[i].p_scan_params, &connCurrent[i].p_conn_params,
             connCurrent[i].con_cfg_tag);
         APP_ERROR_CHECK(err_code);
+       // do {
+          //__WFE();
+      //    sd_app_evt_wait ();
+      //  } while (!isConnectedBle);
+         while (!isConnectedBle);
+        connCurrent[i].connHandler = bleConnNumber;
       }
-      do {
-        __WFE();
-      } while (!isConnectedBle);
-      connCurrent[i].connHandler=bleConnNumber;
       break;
     }
   }
@@ -224,11 +226,12 @@ void FrameProcess_Saim(ProtInstanse *pr) {
     if (pr->sProtokolType == prSlave)
       pr->sExType = 0;
     //__enable_irq();
-  } else {
+  } else 
+  {
     NRF_LOG_DEBUG("ResponseReady len: %d", pr->mLen);
-    change_address(pr); //@TODO
+    change_address(pr); 
     pr->state = ResponseReady;
-    if (pr->sProtokolType == prMaster)
+    if (pr->sProtokolType == prMaster)//@TODO
       pr->sExType = 0;
     if (pr->sProtokolType == prSlave)
       pr->sExType = 1;

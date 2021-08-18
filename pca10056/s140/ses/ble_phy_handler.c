@@ -111,6 +111,7 @@ uint32_t ble_siam_data_send(ble_siam_t *p_nus,
 uint16_t siam_data_send(uint8_t *data, uint16_t len) {
   uint32_t ret_val;
   uint16_t conn_handle =bleConnNumber;
+  g_ble_nus_c_SIAM->conn_handle=bleConnNumber;
   //uint32_t err_code = ble_siam_data_send((void*)gServiceBleSiamFn, data, &len, *gConnHandlerSiam);
   //if ((err_code != NRF_ERROR_INVALID_STATE) &&
   //	(err_code != NRF_ERROR_RESOURCES) &&
@@ -127,7 +128,7 @@ uint16_t siam_data_send(uint8_t *data, uint16_t len) {
   //             return ret_val;
 
   do {
-    ret_val = ble_nus_c_string_send(g_ble_nus_c_SIAM + sizeof(ble_nus_c_t) * conn_handle,
+    ret_val = ble_nus_c_string_send(g_ble_nus_c_SIAM,
         data, len);
     if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
         (ret_val != NRF_ERROR_INVALID_STATE)) {

@@ -792,6 +792,9 @@ ble_nus_c_evt_handler(
     NRF_LOG_INFO("Connected to device with Nordic UART Service, handle: "
                  "%x, evt_handle: %x",
         p_ble_nus_c->conn_handle, p_ble_nus_evt->conn_handle);
+        // bleConnNumber = p_gap_evt->conn_handle;
+        bleConnNumber= p_ble_nus_c->conn_handle;
+    isConnectedBle = true;
     break;
 
   case BLE_NUS_C_EVT_NUS_TX_EVT:
@@ -874,8 +877,7 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
     APP_ERROR_CHECK(err_code);
 
     NRF_LOG_INFO("Connected. conn_handle: 0x%x", p_gap_evt->conn_handle);
-    bleConnNumber = p_gap_evt->conn_handle;
-    isConnectedBle = true;
+   
 
     // if (ble_conn_state_central_conn_count() <
     //      NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
@@ -935,15 +937,6 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
         BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
     APP_ERROR_CHECK(err_code);
     break;
-
-    //  case BLE_GATTS_EVT_TIMEOUT:
-    // Disconnect on GATT Server timeout event.
-    //     NRF_LOG_DEBUG ("GATT Server Timeout.");
-    //     err_code = sd_ble_gap_disconnect
-    //     (p_ble_evt->evt.gatts_evt.conn_handle,
-    //          BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-    //     APP_ERROR_CHECK (err_code);
-    //     break;
 
   default:
     break;
@@ -1132,20 +1125,24 @@ void bsp_event_handler(bsp_event_t event) {
     /*end section*/
 
      NRF_LOG_INFO ("BSP_EVENT_KEY_2");
-     do
-       {
-         ret_val =
-             ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
-         if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
-             (ret_val != NRF_ERROR_INVALID_STATE))
-           {
-             NRF_LOG_ERROR (
-                 "Failed sending NUS message. Error 0x%x. ", ret_val);
-             APP_ERROR_CHECK (ret_val);
-           }
+    // do
+    //   {
+    //     ret_val =
+    //         ble_nus_c_string_send (&m_ble_nus_c_SIAM[0], modem2Str, 12);
+    //     if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
+    //         (ret_val != NRF_ERROR_INVALID_STATE))
+    //       {
+    //         NRF_LOG_ERROR (
+    //             "Failed sending NUS message. Error 0x%x. ", ret_val);
+    //         APP_ERROR_CHECK (ret_val);
+     //      }
 
-      }
-     while (ret_val == NRF_ERROR_BUSY);
+     // }
+    // while (ret_val == NRF_ERROR_BUSY);
+    err_code = sd_ble_gap_connect(&connCurrent[2].addr,
+        &connCurrent[2].p_scan_params, &connCurrent[2].p_conn_params,
+        connCurrent[2].con_cfg_tag);
+    APP_ERROR_CHECK(err_code);
   } break;
   case BSP_EVENT_KEY_3: {
     //  NRF_LOG_HEXDUMP_INFO(&dynScanSaveVal[cntForConnect].peer_addr.addr, 6);
@@ -1159,9 +1156,10 @@ void bsp_event_handler(bsp_event_t event) {
     //                       6)) // modemDDIM180
     //      {
     //       NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
-    err_code = sd_ble_gap_connect(&scanMy[1].peer_addr,
-        &scanMy[1].p_scan_params, &scanMy[1].p_conn_params,
-        scanMy[1].con_cfg_tag);
+     NRF_LOG_INFO ("BSP_EVENT_KEY_3");
+    err_code = sd_ble_gap_connect(&connCurrent[1].addr,
+        &connCurrent[1].p_scan_params, &connCurrent[1].p_conn_params,
+        connCurrent[1].con_cfg_tag);
     APP_ERROR_CHECK(err_code);
     //      }
     /*end section*/

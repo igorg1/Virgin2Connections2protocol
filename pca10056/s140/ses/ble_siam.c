@@ -1,4 +1,5 @@
-#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_siam.h"
+//#include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_siam.h"
+#include "ble_siam.h"
 #include "nrf_log.h"
 
 /**@brief Function for handling the @ref BLE_GAP_EVT_CONNECTED event from the SoftDevice.

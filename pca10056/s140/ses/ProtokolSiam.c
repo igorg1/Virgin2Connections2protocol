@@ -68,40 +68,50 @@ void ErrorResponseSiam(ProtInstanse *pr, eSiamError eException) {
 void change_address(ProtInstanse *pr) {
   uint8_t IDscan;
   ret_code_t err_code;
-  if (true == (pr->mBuf[2] & 0x01)) {
-    IDscan = (pr->mBuf[2] + 1) / 2;
-    pr->mBuf[2] = 01;
-  } else {
-    IDscan = pr->mBuf[2] / 2;
-    pr->mBuf[2] = 127;
-  }
-  for (size_t i = 0; i < 62; i++) {
-    if (HReg.workingScanVal[i].id == IDscan) {
-      connCurrent[i].id_scan = IDscan;
-      break;
+  switch (pr->sProtokolType) {
+  case prMaster:
+    if (true == (pr->mBuf[2] & 0x01)) {
+      IDscan = (pr->mBuf[2] + 1) / 2;
+      pr->mBuf[2] = 01;
+    } else {
+      IDscan = pr->mBuf[2] / 2;
+      pr->mBuf[2] = 127;
     }
-  }
-  for (size_t i = 0; i < 62; i++) {
-    if (connCurrent[i].id_scan == IDscan) {
-      if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
-        isConnectedBle = false;
-        err_code = sd_ble_gap_connect(&connCurrent[i].addr,
-            &connCurrent[i].p_scan_params, &connCurrent[i].p_conn_params,
-            connCurrent[i].con_cfg_tag);
-        APP_ERROR_CHECK(err_code);
-       // do {
-          //__WFE();
-      //    sd_app_evt_wait ();
-      //  } while (!isConnectedBle);
-         while (!isConnectedBle);
-        connCurrent[i].connHandler = bleConnNumber;
+    for (size_t i = 0; i < 62; i++) {
+      if (HReg.workingScanVal[i].id == IDscan) {
+        connCurrent[i].id_scan = IDscan;
+        break;
       }
-      break;
     }
+    for (size_t i = 0; i < 62; i++) {
+      if (connCurrent[i].id_scan == IDscan) {
+        if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
+          isConnectedBle = false;
+          err_code = sd_ble_gap_connect(&connCurrent[i].addr,
+              &connCurrent[i].p_scan_params, &connCurrent[i].p_conn_params,
+              connCurrent[i].con_cfg_tag);
+          APP_ERROR_CHECK(err_code);
+          // do {
+          //__WFE();
+          //  sd_app_evt_wait ();
+          // } while (!isConnectedBle);
+          while (!isConnectedBle)
+            ;
+          connCurrent[i].connHandler = bleConnNumber;
+        }
+        break;
+      }
+    }
+    pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
+    uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
+    memcpy(pr->mBuf + 10, &crc, 2); //+
+    break;
+  case prSlave:
+  NRF_LOG_INFO("test");
+    break;
+  default:
+    break;
   }
-  pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
-  uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
-  memcpy(pr->mBuf + 10, &crc, 2); //+
 }
 //-----------------------------------------------------------------------------
 void FrameProcess_Saim(ProtInstanse *pr) {
@@ -206,9 +216,9 @@ void FrameProcess_Saim(ProtInstanse *pr) {
   const uint8_t addr_device = *(uint8_t *)&pr->mBuf[2];
   const uint32_t addr_reg = *(uint32_t *)&pr->mBuf[4];
   qty = *(uint16_t *)&pr->mBuf[8];
-
+  
   eSiamError eException = eNoError;
-
+  NRF_LOG_INFO("ProtcolType %d\n\n", pr->sProtokolType);
   if (addr_device == pr->addr) {
     //__disable_irq();
     switch (ucFunctionCode) {
@@ -226,12 +236,11 @@ void FrameProcess_Saim(ProtInstanse *pr) {
     if (pr->sProtokolType == prSlave)
       pr->sExType = 0;
     //__enable_irq();
-  } else 
-  {
+  } else {
     NRF_LOG_DEBUG("ResponseReady len: %d", pr->mLen);
-    change_address(pr); 
+    change_address(pr);
     pr->state = ResponseReady;
-    if (pr->sProtokolType == prMaster)//@TODO
+    if (pr->sProtokolType == prMaster) //@TODO
       pr->sExType = 0;
     if (pr->sProtokolType == prSlave)
       pr->sExType = 1;
@@ -256,6 +265,7 @@ void Siam_Handler(ProtInstanse *pr, Exchange *ex) {
   case FrameReceived:
     ex->EnableRx(0);
     FrameProcess_Saim(pr);
+  //  NRF_LOG_INFO("Here");
     if (pr->state == NotInit) {
       ex->EnableRx(1);
       break;
@@ -265,6 +275,7 @@ void Siam_Handler(ProtInstanse *pr, Exchange *ex) {
   case ResponseReady:
     if (pr->sExType == ex->sExType) {
       ex->EnableTx(1);
+ //     NRF_LOG_INFO("Here1");
       ex->TransmitFn(pr, pr->mBuf, pr->mLen); //передача
       pr->state = NotInit;
     }

@@ -102,6 +102,9 @@ typedef struct
 
 } SCANVAL;
 
+
+
+
 extern HoldingReg HReg;
 SCANVAL scanVal;
 SCANVAL *readDEE;
@@ -135,16 +138,22 @@ NRF_LIBUARTE_ASYNC_DEFINE(libuarte1, 1, 2, NRF_LIBUARTE_PERIPHERAL_NOT_USED,
 static volatile bool m_loopback_phase0; // Siam
 static volatile bool m_loopback_phase1; // MB
 
-typedef struct
-{
-  uint8_t *p_data;
-  uint32_t length;
-} buffer_t;
+//typedef struct
+//{
+//  uint8_t *p_data;
+//  uint32_t length;
+//} buffer_t;
 
 NRF_QUEUE_DEF(buffer_t, m_buf_queue0, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // Siam
 NRF_QUEUE_DEF(buffer_t, m_buf_queue1, 10, NRF_QUEUE_MODE_NO_OVERFLOW); // MB
+NRF_QUEUE_DEF(buffer_t, mBleSiam_buf_queue, 10, NRF_QUEUE_MODE_NO_OVERFLOW);
 
 /* LibUARTE section end */
+
+/*from ble_phy_handler.c Begin*/
+
+
+/*from ble_phy_handler.c End*/
 
 #define APP_BLE_CONN_CFG_TAG                                          \
   1 /**< Tag that refers to the BLE stack configuration set with @ref \
@@ -778,7 +787,7 @@ static void
 ble_nus_c_evt_handler(
     ble_nus_c_t *p_ble_nus_c, ble_nus_c_evt_t const *p_ble_nus_evt) {
   ret_code_t err_code;
-
+  buffer_t buf;
   switch (p_ble_nus_evt->evt_type) {
   case BLE_NUS_C_EVT_DISCOVERY_COMPLETE:
     NRF_LOG_INFO("Discovery complete. TX type %x",
@@ -799,12 +808,15 @@ ble_nus_c_evt_handler(
 
   case BLE_NUS_C_EVT_NUS_TX_EVT:
     NRF_LOG_INFO("Receive N \t%x\r\n", p_ble_nus_c->conn_handle);
-    err_code = nrf_libuarte_async_tx(
-        &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
-    //ble_nus_chars_received_uart_print_SIAM (
-    //    p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
-    //    ble_nus_chars_received_uart_print_MB (
-    //      p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+  //  err_code = nrf_libuarte_async_tx(
+  //      &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+
+    buf.p_data = (uint8_t *)p_ble_nus_evt->p_data;
+    buf.length = p_ble_nus_evt->data_len;
+    NRF_LOG_INFO("BLE rx data len: %d",p_ble_nus_evt->data_len);
+    err_code = nrf_queue_push(&mBleSiam_buf_queue, &buf);
+    APP_ERROR_CHECK(err_code);
+    gOnBleReceiveSiam(gProtokolBleSiamInstans, (void *)&mBleSiam_buf_queue, 0);
     break;
 
   case BLE_NUS_C_EVT_DISCONNECTED:

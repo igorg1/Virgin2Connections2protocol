@@ -1,3 +1,5 @@
+
+
 #include "ble_phy_handler.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\ble\ble_link_ctx_manager\ble_link_ctx_manager.h"
 #include "C:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_modbus.h"
@@ -20,10 +22,7 @@ extern uint16_t bleConnNumber;
  *
  * @param[in]
  */
-typedef struct {
-  uint8_t *p_data;
-  uint32_t length;
-} buffer_t;
+
 //**********************************************************************************
 //**********************************************************************************
 //**********************************************************************************
@@ -39,7 +38,7 @@ uint32_t *gConnHandlerSiam = 0;
 int gEnableRxBleSiam = 0;
 int gEnableTxBleSiam = 0;
 
-NRF_QUEUE_DEF(buffer_t, mBleSiam_buf_queue, 10, NRF_QUEUE_MODE_NO_OVERFLOW);
+//NRF_QUEUE_DEF(buffer_t, mBleSiam_buf_queue, 10, NRF_QUEUE_MODE_NO_OVERFLOW);
 
 void siam_data_handler(ble_siam_evt_t *p_evt) {
   ret_code_t ret;
@@ -51,17 +50,17 @@ void siam_data_handler(ble_siam_evt_t *p_evt) {
     {
       //Uart0_Enable();
       //timer_ble = sBluetoothCfg.mDisconnectTimer;
-      buf.p_data = (uint8_t *)p_evt->params.rx_data.p_data;
-      buf.length = p_evt->params.rx_data.length;
-      NRF_LOG_INFO("BLE rx data len: %d", p_evt->params.rx_data.length);
-      ret = nrf_queue_push(&mBleSiam_buf_queue, &buf);
-      APP_ERROR_CHECK(ret);
-      gOnBleReceiveSiam(gProtokolBleSiamInstans, (void *)&mBleSiam_buf_queue, 0);
+   //   buf.p_data = (uint8_t *)p_evt->params.rx_data.p_data;
+  //    buf.length = p_evt->params.rx_data.length;
+  //    NRF_LOG_INFO("BLE rx data len: %d", p_evt->params.rx_data.length);
+  //    ret = nrf_queue_push(&mBleSiam_buf_queue, &buf);
+  //    APP_ERROR_CHECK(ret);
+  //    gOnBleReceiveSiam(gProtokolBleSiamInstans, (void *)&mBleSiam_buf_queue, 0);
     }
     break;
   case BLE_SIAM_EVT_TX_RDY:
     if (gOnBleTxCompleteSiam != NULL) {
-      gOnBleTxCompleteSiam(gProtokolBleSiamInstans);
+ //     gOnBleTxCompleteSiam(gProtokolBleSiamInstans);
     }
     break;
   case BLE_SIAM_EVT_COMM_STARTED:

@@ -100,7 +100,7 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/mem_config.o: \
  ../../../../../../components/softdevice/s140/headers/ble_types.h \
  ../../../../../../components/softdevice/s140/headers/ble_hci.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\Protokol.h \
- C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMb.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMB.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolMbStruct.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\exchenge.h \
  C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ProtokolSiam.h \
@@ -120,6 +120,19 @@ Output/Debug/Obj/ble_app_uart_c_pca10056_s140/mem_config.o: \
  ../../../../../../modules/nrfx/hal/nrf_uarte.h \
  ../../../../../../components/libraries/timer/app_timer.h \
  ../../../../../../components/libraries/sortlist/nrf_sortlist.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_phy_handler.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\components\ble\ble_link_ctx_manager\ble_link_ctx_manager.h \
+ ../../../../../../components/ble/common/ble_conn_state.h \
+ ../../../../../../components/libraries/atomic/nrf_atomic.h \
+ ../../../../../../components/ble/ble_services/ble_nus_c/ble_nus_c.h \
+ ../../../../../../components/ble/ble_db_discovery/ble_db_discovery.h \
+ ../../../../../../components/softdevice/s140/headers/ble_gattc.h \
+ ../../../../../../components/ble/common/ble_gatt_db.h \
+ ../../../../../../components/ble/nrf_ble_gq/nrf_ble_gq.h \
+ ../../../../../../components/libraries/memobj/nrf_memobj.h \
+ C\:/Program\ Files/SEGGER/SEGGER\ Embedded\ Studio\ for\ ARM\ 5.44/include/stdlib.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_siam.h \
+ C\:\NordicCurrentSDK\nRF5SDK1702d674dde\nRF5_SDK_17.0.2_d674dde\examples\ble_app_uart_c_Jury\ble_app_uart_c\pca10056\s140\ses\ble_modbus.h \
  ../../../../../../components/libraries/delay/nrf_delay.h \
  ../../../../../../components/softdevice/s140/headers/nrf_sdm.h \
  ../../../../../../components/softdevice/s140/headers/nrf_error_sdm.h

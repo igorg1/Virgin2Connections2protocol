@@ -15,11 +15,11 @@
 //#include "ble_phy_handler.h"
 
 //**********************************************************************************
-typedef struct
-{
-  uint8_t *p_data;
-  uint32_t length;
-} buffer_t;
+//typedef struct
+//{
+//  uint8_t *p_data;
+//  uint32_t length;
+//} buffer_t;
 //**********************************************************************************
 typedef void (*ProtokolHandler) ();
 ProtokolHandler gProtokolHandler; //”казатель на функцию Handlera протокола
@@ -116,7 +116,7 @@ Prot_Init (void)
   ex_blesiam.OnReceiveFn = DoReceive;
   ex_blesiam.OnTxCompleate = OnTxCompleate_Siam;
   ex_blesiam.sExType = 1;
-  BLE_Siam_Register (&prot_inst_siam_master, &ex_blesiam);
+//  BLE_Siam_Register (&prot_inst_siam_master, &ex_blesiam);
   Uart0_Register(&prot_inst_siam_master, &ex_blesiam);
   prot_inst_mb_master.addr = sProtocolAddr; // sBL_Cfg.mModbusAddress;
   prot_inst_mb_master.sProtokolType = prMaster;

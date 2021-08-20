@@ -8,6 +8,7 @@ UART_ASSIGN connCurrent[62];
 extern uint8_t cntAll;
 extern bool isConnectedBle;
 extern uint16_t bleConnNumber;
+extern uint16_t bleReturnedConnNumber;
 
 //-----------------------------------------------------------------------------
 eSiamError ProcessWriteCmdSiam(ProtInstanse *pr, uint8_t *buf, uint8_t len, uint8_t addr_device, uint32_t addr_reg, uint16_t qty) {
@@ -68,16 +69,18 @@ void ErrorResponseSiam(ProtInstanse *pr, eSiamError eException) {
 void change_address(ProtInstanse *pr) {
   uint8_t IDscan;
   ret_code_t err_code;
+  uint8_t tempAddress=0;
+  uint16_t crc;
   switch (pr->sProtokolType) {
   case prMaster:
     if (true == (pr->mBuf[2] & 0x01)) {
       IDscan = (pr->mBuf[2] + 1) / 2;
-      pr->mBuf[2] = 01;
+      pr->mBuf[2] = 0x01;
     } else {
       IDscan = pr->mBuf[2] / 2;
-      pr->mBuf[2] = 127;
+      pr->mBuf[2] = 0x7F;
     }
-    for (size_t i = 0; i < 62; i++) {
+    for (size_t i = 0; i < 62; i++) {//if work without saved flash record - &TODO condition don't check daved record
       if (HReg.workingScanVal[i].id == IDscan) {
         connCurrent[i].id_scan = IDscan;
         break;
@@ -102,12 +105,29 @@ void change_address(ProtInstanse *pr) {
         break;
       }
     }
-    pr->sconn_handle = IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
-    uint16_t crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
+    pr->sconn_handle = bleConnNumber;//IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
+     crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
     memcpy(pr->mBuf + 10, &crc, 2); //+
     break;
   case prSlave:
   NRF_LOG_INFO("test");
+    for (size_t i=0;i<62;i++){
+      if (connCurrent[i].connHandler==bleReturnedConnNumber){
+        switch(pr->mBuf[2]){
+        case 0x01:
+        pr->mBuf[2]=(connCurrent[i].id_scan*2)-1;
+        break;
+        case 0x7F:
+        pr->mBuf[2]=connCurrent[i].id_scan*2;
+        break;
+        default:
+        break;
+        }
+        break;
+      }
+    }
+     crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
+    memcpy(pr->mBuf + 10, &crc, 2);
     break;
   default:
     break;
@@ -219,7 +239,7 @@ void FrameProcess_Saim(ProtInstanse *pr) {
   
   eSiamError eException = eNoError;
   NRF_LOG_INFO("ProtcolType %d\n\n", pr->sProtokolType);
-  if (addr_device == pr->addr) {
+  if ((addr_device == pr->addr)&&(pr->sProtokolType == prMaster)) {
     //__disable_irq();
     switch (ucFunctionCode) {
     default:

@@ -85,6 +85,7 @@
 extern UART_ASSIGN connCurrent[62];
 bool isConnectedBle = false;
 uint16_t bleConnNumber = BLE_CONN_HANDLE_INVALID;
+uint16_t bleReturnedConnNumber=BLE_CONN_HANDLE_INVALID;
 
 typedef struct
 {
@@ -225,7 +226,7 @@ static ble_gap_scan_params_t m_scan_param = {
 nrf_libuarte_async_config_t nrf_libuarte_async_config0 = {.tx_pin =
                                                               TX_PIN_NUMBER,
     .rx_pin = RX_PIN_NUMBER,
-    .baudrate = NRF_UARTE_BAUDRATE_115200,
+    .baudrate = NRF_UARTE_BAUDRATE_9600,
     .parity = NRF_UARTE_PARITY_EXCLUDED,
     .hwfc = NRF_UARTE_HWFC_DISABLED,
     .timeout_us = 1000,
@@ -816,6 +817,7 @@ ble_nus_c_evt_handler(
     NRF_LOG_INFO("BLE rx data len: %d",p_ble_nus_evt->data_len);
     err_code = nrf_queue_push(&mBleSiam_buf_queue, &buf);
     APP_ERROR_CHECK(err_code);
+    bleReturnedConnNumber= p_ble_nus_c->conn_handle;
     gOnBleReceiveSiam(gProtokolBleSiamInstans, (void *)&mBleSiam_buf_queue, 0);
     break;
 

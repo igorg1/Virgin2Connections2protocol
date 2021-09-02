@@ -83,9 +83,10 @@
 #include "nrf_ble_qwr.h"
 
 extern UART_ASSIGN connCurrent[62];
-bool isConnectedBle = false;
+volatile bool isConnectedBle = false;
+volatile bool timeOutConnectionBLE=false;
 uint16_t bleConnNumber = BLE_CONN_HANDLE_INVALID;
-uint16_t bleReturnedConnNumber=BLE_CONN_HANDLE_INVALID;
+uint16_t bleReturnedConnNumber = BLE_CONN_HANDLE_INVALID;
 
 typedef struct
 {
@@ -102,9 +103,6 @@ typedef struct
                          - sizeof(uint16_t) - sizeof(ble_gap_addr_t) - sizeof(uint8_t) - sizeof(ble_gap_scan_params_t) - sizeof(ble_gap_conn_params_t) - (20 * sizeof(char)) - sizeof(uint8_t) - sizeof(uint8_t)];
 
 } SCANVAL;
-
-
-
 
 extern HoldingReg HReg;
 SCANVAL scanVal;
@@ -152,7 +150,6 @@ NRF_QUEUE_DEF(buffer_t, mBleSiam_buf_queue, 10, NRF_QUEUE_MODE_NO_OVERFLOW);
 /* LibUARTE section end */
 
 /*from ble_phy_handler.c Begin*/
-
 
 /*from ble_phy_handler.c End*/
 
@@ -223,15 +220,30 @@ static ble_gap_scan_params_t m_scan_param = {
     .extended = 1,
 };
 
+#ifndef USE_CUSTOM_BRD
 nrf_libuarte_async_config_t nrf_libuarte_async_config0 = {.tx_pin =
                                                               TX_PIN_NUMBER,
     .rx_pin = RX_PIN_NUMBER,
-    .baudrate = NRF_UARTE_BAUDRATE_9600,
+    .baudrate = NRF_UARTE_BAUDRATE_1000000,//NRF_UARTE_BAUDRATE_115200,
+  // .baudrate = NRF_UARTE_BAUDRATE_115200,
     .parity = NRF_UARTE_PARITY_EXCLUDED,
     .hwfc = NRF_UARTE_HWFC_DISABLED,
     .timeout_us = 1000,
     .int_prio = 5};
-
+#else
+//33 - RX - P0.13
+//35 - TX - P0.24
+#define MY_RX_PIN NRF_GPIO_PIN_MAP(0,13)
+#define MY_TX_PIN NRF_GPIO_PIN_MAP(0,24)
+nrf_libuarte_async_config_t nrf_libuarte_async_config0 = {.tx_pin =
+                                                              MY_TX_PIN,
+    .rx_pin = MY_RX_PIN,
+    .baudrate = NRF_UARTE_BAUDRATE_115200,
+    .parity = NRF_UARTE_PARITY_EXCLUDED,
+    .hwfc = NRF_UARTE_HWFC_DISABLED,
+    .timeout_us = 1000,
+    .int_prio = 5};
+#endif
 gExchangeFn gOnUartReceive0 = NULL;
 gCompleateFn gOnUartTxCompleate0 = NULL;
 void *gProtocolInstance0 = NULL;
@@ -500,12 +512,11 @@ void scan_start(void) {
   }
 
   NRF_LOG_INFO("Starting scan.");
-
-  //  ret = bsp_indication_set (BSP_INDICATE_SCANNING);
-  //  APP_ERROR_CHECK (ret);
-
-  ret = bsp_indication_set(BSP_INDICATE_SCANNING);
+#ifndef USE_CUSTOM_BRD
+  ret = bsp_indication_set(BSP_INDICATE_ADVERTISING_DIRECTED);
   APP_ERROR_CHECK(ret);
+#endif
+  // ret = bsp_indication_set(BSP_INDICATE_SCANNING);
 }
 
 /**@brief Function for handling Scanning Module events.
@@ -721,6 +732,12 @@ scan_evt_handler(scan_evt_t const *p_scan_evt) {
     //             scanMy[i].con_cfg_tag);
     //       }
     //  }
+#ifndef USE_CUSTOM_BRD
+
+    err_code = bsp_indication_set(BSP_INDICATE_USER_STATE_OFF);
+    APP_ERROR_CHECK(err_code);
+#endif
+
   } break;
 
   default:
@@ -802,22 +819,22 @@ ble_nus_c_evt_handler(
     NRF_LOG_INFO("Connected to device with Nordic UART Service, handle: "
                  "%x, evt_handle: %x",
         p_ble_nus_c->conn_handle, p_ble_nus_evt->conn_handle);
-        // bleConnNumber = p_gap_evt->conn_handle;
-        bleConnNumber= p_ble_nus_c->conn_handle;
+    // bleConnNumber = p_gap_evt->conn_handle;
+    bleConnNumber = p_ble_nus_c->conn_handle;
     isConnectedBle = true;
     break;
 
   case BLE_NUS_C_EVT_NUS_TX_EVT:
     NRF_LOG_INFO("Receive N \t%x\r\n", p_ble_nus_c->conn_handle);
-  //  err_code = nrf_libuarte_async_tx(
-  //      &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
+    //  err_code = nrf_libuarte_async_tx(
+    //      &libuarte0, p_ble_nus_evt->p_data, p_ble_nus_evt->data_len);
 
     buf.p_data = (uint8_t *)p_ble_nus_evt->p_data;
     buf.length = p_ble_nus_evt->data_len;
-    NRF_LOG_INFO("BLE rx data len: %d",p_ble_nus_evt->data_len);
+    NRF_LOG_INFO("BLE rx data len: %d", p_ble_nus_evt->data_len);
     err_code = nrf_queue_push(&mBleSiam_buf_queue, &buf);
     APP_ERROR_CHECK(err_code);
-    bleReturnedConnNumber= p_ble_nus_c->conn_handle;
+    bleReturnedConnNumber = p_ble_nus_c->conn_handle;
     gOnBleReceiveSiam(gProtokolBleSiamInstans, (void *)&mBleSiam_buf_queue, 0);
     break;
 
@@ -837,15 +854,17 @@ ble_nus_c_evt_handler(
 static bool
 shutdown_handler(nrf_pwr_mgmt_evt_t event) {
   ret_code_t err_code;
-
+#ifndef USE_CUSTOM_BRD
   err_code = bsp_indication_set(BSP_INDICATE_IDLE);
   APP_ERROR_CHECK(err_code);
-
+#endif
   switch (event) {
   case NRF_PWR_MGMT_EVT_PREPARE_WAKEUP:
-    // Prepare wakeup buttons.
+// Prepare wakeup buttons.
+#ifndef USE_CUSTOM_BRD
     err_code = bsp_btn_ble_sleep_mode_prepare();
     APP_ERROR_CHECK(err_code);
+#endif
     break;
 
   default:
@@ -880,10 +899,10 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
         &m_ble_nus_c_SIAM[p_ble_evt->evt.gap_evt.conn_handle],
         p_ble_evt->evt.gap_evt.conn_handle, NULL);
     APP_ERROR_CHECK(err_code);
-
+#ifndef USE_CUSTOM_BRD
     err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
     APP_ERROR_CHECK(err_code);
-
+#endif
     // start discovery of services. The NUS Client waits for a discovery
     // result
     err_code = ble_db_discovery_start(
@@ -891,7 +910,6 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
     APP_ERROR_CHECK(err_code);
 
     NRF_LOG_INFO("Connected. conn_handle: 0x%x", p_gap_evt->conn_handle);
-   
 
     // if (ble_conn_state_central_conn_count() <
     //      NRF_SDH_BLE_CENTRAL_LINK_COUNT) {
@@ -915,6 +933,7 @@ ble_evt_handler(ble_evt_t const *p_ble_evt, void *p_context) {
   case BLE_GAP_EVT_TIMEOUT:
     if (p_gap_evt->params.timeout.src == BLE_GAP_TIMEOUT_SRC_CONN) {
       NRF_LOG_INFO("Connection Request timed out.");
+    timeOutConnectionBLE=true;
     }
     break;
 
@@ -1119,10 +1138,10 @@ void bsp_event_handler(bsp_event_t event) {
     //   firstScreen = true;
     //   readFlashDEE();
     // }
-  //  cntForConnect--;
-  //  if (cntForConnect < 0)
- //     cntForConnect = (savedFlashCnt - 1);
- //   NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
+    //  cntForConnect--;
+    //  if (cntForConnect < 0)
+    //     cntForConnect = (savedFlashCnt - 1);
+    //   NRF_LOG_INFO("Number For device to connect: %d", cntForConnect);
 
     /* begin section*/
     //  NRF_LOG_INFO ("Read from Flash memory");
@@ -1138,7 +1157,7 @@ void bsp_event_handler(bsp_event_t event) {
     //    NRF_LOG_INFO ("Test");
     /*end section*/
 
-     NRF_LOG_INFO ("BSP_EVENT_KEY_2");
+    NRF_LOG_INFO("BSP_EVENT_KEY_2");
     // do
     //   {
     //     ret_val =
@@ -1149,9 +1168,9 @@ void bsp_event_handler(bsp_event_t event) {
     //         NRF_LOG_ERROR (
     //             "Failed sending NUS message. Error 0x%x. ", ret_val);
     //         APP_ERROR_CHECK (ret_val);
-     //      }
+    //      }
 
-     // }
+    // }
     // while (ret_val == NRF_ERROR_BUSY);
     err_code = sd_ble_gap_connect(&connCurrent[2].addr,
         &connCurrent[2].p_scan_params, &connCurrent[2].p_conn_params,
@@ -1170,7 +1189,7 @@ void bsp_event_handler(bsp_event_t event) {
     //                       6)) // modemDDIM180
     //      {
     //       NRF_LOG_HEXDUMP_INFO(scanMy[i].peer_addr.addr, 6);
-     NRF_LOG_INFO ("BSP_EVENT_KEY_3");
+    NRF_LOG_INFO("BSP_EVENT_KEY_3");
     err_code = sd_ble_gap_connect(&connCurrent[1].addr,
         &connCurrent[1].p_scan_params, &connCurrent[1].p_conn_params,
         connCurrent[1].con_cfg_tag);
@@ -1183,7 +1202,7 @@ void bsp_event_handler(bsp_event_t event) {
   //    {
   //      ret_val = ble_nus_c_string_send (&m_ble_nus_c_MB[0],
   //      modem1StrMB,
-         //   8);//  ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
+  //   8);//  ble_nus_c_string_send (&m_ble_nus_c_SIAM[0],
   //          modem2Str,
   // 12);
   //      if ((ret_val != NRF_SUCCESS) && (ret_val != NRF_ERROR_BUSY) &&
@@ -1375,7 +1394,7 @@ uint16_t readFlashDEE(void) {
 
   uint32_t endMemoryPtr = (uint32_t)Flash_LoadStor(
       FLASH_DEECFG_START_ADDR, FLASH_DEECFG_END_ADDR, sizeof(SCANVAL));
-  if (endMemoryPtr >= FLASH_DEECFG_START_ADDR) { //something in the flash                                           
+  if (endMemoryPtr >= FLASH_DEECFG_START_ADDR) { //something in the flash
     for (m = FLASH_DEECFG_START_ADDR; m <= endMemoryPtr; m += 0x40) {
       memcpy(&flashedDevicesArray[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
       //  memcpy(&dynScanSaveVal[savedFlashCnt], (uint32_t *)m, sizeof(SCANVAL));
@@ -1399,7 +1418,7 @@ void saveScannedDev(void) {
       memset(&scanVal, 0, sizeof(SCANVAL));
       memcpy(&scanVal.id_scan, &HReg.workingScanVal[i].id, sizeof(uint16_t));
       memcpy(&scanVal.con_cfg_tag, &connCurrent[i].con_cfg_tag, sizeof(uint8_t));
-      memcpy(&scanVal.name,connCurrent[i].name,20);
+      memcpy(&scanVal.name, connCurrent[i].name, 20);
       memcpy(&scanVal.p_conn_params, &connCurrent[i].p_conn_params,
           sizeof(ble_gap_conn_params_t));
       memcpy(&scanVal.p_scan_params, &connCurrent[i].p_scan_params,
@@ -1425,7 +1444,9 @@ int main(void) {
       .timeout_us = 1000,
       .int_prio = 5};
   timer_init();
+#ifndef USE_CUSTOM_BRD
   buttons_leds_init();
+#endif
   db_discovery_init();
   power_management_init();
   ble_stack_init();

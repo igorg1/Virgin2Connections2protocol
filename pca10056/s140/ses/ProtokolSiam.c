@@ -1,17 +1,20 @@
 #include "ProtokolSiam.h"
 #include "ble_types.h"
+#include "bsp.h"
 #include "main.h"
 #include "nrf_log.h"
 #include <string.h>
 
 UART_ASSIGN connCurrent[62];
 extern uint8_t cntAll;
-extern bool isConnectedBle;
+extern volatile bool isConnectedBle;
+extern volatile bool timeOutConnectionBLE;
 extern uint16_t bleConnNumber;
 extern uint16_t bleReturnedConnNumber;
 
 //-----------------------------------------------------------------------------
 eSiamError ProcessWriteCmdSiam(ProtInstanse *pr, uint8_t *buf, uint8_t len, uint8_t addr_device, uint32_t addr_reg, uint16_t qty) {
+  uint8_t IDscan;
   uint16_t crc = usMBCRC16(pr->mBuf + 2, 8);
   if (crc != *(uint16_t *)&pr->mBuf[10])
     return eWrongCrc;
@@ -23,6 +26,15 @@ eSiamError ProcessWriteCmdSiam(ProtInstanse *pr, uint8_t *buf, uint8_t len, uint
   uint8_t *reg = find_reg_siam(addr_device, addr_reg, qty, SIAM_REG_WRITE);
   if (!reg)
     return eWrongAddr;
+  //find old IDscan and erase begin
+  IDscan = buf[12];
+  for (size_t i = 0; i < 62; i++) {
+    if (HReg.workingScanVal[i].id == IDscan) {
+      HReg.workingScanVal[i].id = 0;
+      break;
+    }
+  }
+  //find old IDscan and erase end
 
   memcpy(&reg[0], &buf[0] + 12, qty);
 
@@ -69,7 +81,7 @@ void ErrorResponseSiam(ProtInstanse *pr, eSiamError eException) {
 void change_address(ProtInstanse *pr) {
   uint8_t IDscan;
   ret_code_t err_code;
-  uint8_t tempAddress=0;
+  uint8_t tempAddress = 0;
   uint16_t crc;
   switch (pr->sProtokolType) {
   case prMaster:
@@ -80,7 +92,7 @@ void change_address(ProtInstanse *pr) {
       IDscan = pr->mBuf[2] / 2;
       pr->mBuf[2] = 0x7F;
     }
-    for (size_t i = 0; i < 62; i++) {//if work without saved flash record - &TODO condition don't check daved record
+    for (size_t i = 0; i < 62; i++) { //if works without saved flash record - &TODO condition don't check saved record
       if (HReg.workingScanVal[i].id == IDscan) {
         connCurrent[i].id_scan = IDscan;
         break;
@@ -90,43 +102,53 @@ void change_address(ProtInstanse *pr) {
       if (connCurrent[i].id_scan == IDscan) {
         if (connCurrent[i].connHandler == BLE_CONN_HANDLE_INVALID) {
           isConnectedBle = false;
+          timeOutConnectionBLE = false;
           err_code = sd_ble_gap_connect(&connCurrent[i].addr,
               &connCurrent[i].p_scan_params, &connCurrent[i].p_conn_params,
               connCurrent[i].con_cfg_tag);
           APP_ERROR_CHECK(err_code);
-          // do {
-          //__WFE();
-          //  sd_app_evt_wait ();
-          // } while (!isConnectedBle);
-          while (!isConnectedBle)
-            ;
-          connCurrent[i].connHandler = bleConnNumber;
+#ifndef USE_CUSTOM_BRD
+          err_code = bsp_indication_set(BSP_INDICATE_BONDING);
+          APP_ERROR_CHECK(err_code);
+#endif
+          do {
+            sd_app_evt_wait();
+          } while ((!isConnectedBle) || (!timeOutConnectionBLE));
+          if (isConnectedBle) {
+            connCurrent[i].connHandler = bleConnNumber;
+#ifndef USE_CUSTOM_BRD
+            err_code = bsp_indication_set(BSP_INDICATE_USER_STATE_OFF);
+            APP_ERROR_CHECK(err_code);
+#endif
+          }
         }
         break;
       }
     }
-    pr->sconn_handle = bleConnNumber;//IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
-     crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
+    if (isConnectedBle){
+    pr->sconn_handle = bleConnNumber; //IDscan; //@TODO - add in ProtInstanse scann_handle - DONE
+    crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
     memcpy(pr->mBuf + 10, &crc, 2); //+
+    }
     break;
   case prSlave:
-  NRF_LOG_INFO("test");
-    for (size_t i=0;i<62;i++){
-      if (connCurrent[i].connHandler==bleReturnedConnNumber){
-        switch(pr->mBuf[2]){
+    NRF_LOG_INFO("test");
+    for (size_t i = 0; i < 62; i++) {
+      if (connCurrent[i].connHandler == bleReturnedConnNumber) {
+        switch (pr->mBuf[2]) {
         case 0x01:
-        pr->mBuf[2]=(connCurrent[i].id_scan*2)-1;
-        break;
+          pr->mBuf[2] = (connCurrent[i].id_scan * 2) - 1;
+          break;
         case 0x7F:
-        pr->mBuf[2]=connCurrent[i].id_scan*2;
-        break;
+          pr->mBuf[2] = connCurrent[i].id_scan * 2;
+          break;
         default:
-        break;
+          break;
         }
         break;
       }
     }
-     crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
+    crc = usMBCRC16((uint8_t *)&pr->mBuf[2], 8);
     memcpy(pr->mBuf + 10, &crc, 2);
     break;
   default:
@@ -236,10 +258,10 @@ void FrameProcess_Saim(ProtInstanse *pr) {
   const uint8_t addr_device = *(uint8_t *)&pr->mBuf[2];
   const uint32_t addr_reg = *(uint32_t *)&pr->mBuf[4];
   qty = *(uint16_t *)&pr->mBuf[8];
-  
+
   eSiamError eException = eNoError;
-  NRF_LOG_INFO("ProtcolType %d\n\n", pr->sProtokolType);
-  if ((addr_device == pr->addr)&&(pr->sProtokolType == prMaster)) {
+  NRF_LOG_INFO("ProtocolType %d\n\n", pr->sProtokolType);
+  if ((addr_device == pr->addr) && (pr->sProtokolType == prMaster)) {
     //__disable_irq();
     switch (ucFunctionCode) {
     default:
@@ -285,7 +307,7 @@ void Siam_Handler(ProtInstanse *pr, Exchange *ex) {
   case FrameReceived:
     ex->EnableRx(0);
     FrameProcess_Saim(pr);
-  //  NRF_LOG_INFO("Here");
+    //  NRF_LOG_INFO("Here");
     if (pr->state == NotInit) {
       ex->EnableRx(1);
       break;
@@ -295,7 +317,7 @@ void Siam_Handler(ProtInstanse *pr, Exchange *ex) {
   case ResponseReady:
     if (pr->sExType == ex->sExType) {
       ex->EnableTx(1);
- //     NRF_LOG_INFO("Here1");
+      //     NRF_LOG_INFO("Here1");
       ex->TransmitFn(pr, pr->mBuf, pr->mLen); //передача
       pr->state = NotInit;
     }

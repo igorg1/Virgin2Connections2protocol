@@ -56,27 +56,27 @@
  </TraceWindow>
  <Watch1>
   <Watches active="1" update="Never">
-   <Watchpoint expression="scanVal" name="scanVal" radix="-1" linenumber="128" filename="../../../main.c"/>
+   <Watchpoint expression="scanVal" name="scanVal" radix="-1" linenumber="129" filename="../../../main.c"/>
    <Watchpoint expression="p_fstorage" name="p_fstorage" radix="-1" linenumber="22" filename="Utils.c"/>
-   <Watchpoint expression="arrayForTemp" name="arrayForTemp" radix="-1" linenumber="1500" filename="../../../main.c"/>
-   <Watchpoint expression="scanMyCnt" name="scanMyCnt" radix="-1" linenumber="1467" filename="../../../main.c"/>
+   <Watchpoint expression="arrayForTemp" name="arrayForTemp" radix="-1" linenumber="1521" filename="../../../main.c"/>
+   <Watchpoint expression="scanMyCnt" name="scanMyCnt" radix="-1" linenumber="1494" filename="../../../main.c"/>
    <Watchpoint expression="scanMy" name="scanMy" radix="-1" linenumber="0" filename="../ses"/>
-   <Watchpoint expression="readDEE" name="readDEE" radix="-1" linenumber="1354" filename="../../../main.c"/>
-   <Watchpoint expression="dynScanSaveVal" name="dynScanSaveVal" radix="-1" linenumber="1196" filename="../../../main.c"/>
+   <Watchpoint expression="readDEE" name="readDEE" radix="-1" linenumber="1379" filename="../../../main.c"/>
+   <Watchpoint expression="dynScanSaveVal" name="dynScanSaveVal" radix="-1" linenumber="1221" filename="../../../main.c"/>
    <Watchpoint expression="HReg" name="HReg" radix="-1" linenumber="76" filename="mem_config.c"/>
-   <Watchpoint expression="workingDevicesArray" name="workingDevicesArray" radix="-1" linenumber="1405" filename="../../../main.c"/>
-   <Watchpoint expression="buf" name="buf" radix="-1" linenumber="52" filename="ProtokolSiam.c"/>
-   <Watchpoint expression="flashedDevicesArray" name="flashedDevicesArray" radix="-1" linenumber="698" filename="../../../main.c"/>
-   <Watchpoint expression="cntAll" name="cntAll" radix="-1" linenumber="714" filename="../../../main.c"/>
-   <Watchpoint expression="connCurrent" name="connCurrent" radix="-1" linenumber="91" filename="ProtokolSiam.c"/>
+   <Watchpoint expression="workingDevicesArray" name="workingDevicesArray" radix="-1" linenumber="1430" filename="../../../main.c"/>
+   <Watchpoint expression="flashedDevicesArray" name="flashedDevicesArray" radix="-1" linenumber="714" filename="../../../main.c"/>
+   <Watchpoint expression="cntAll" name="cntAll" radix="-1" linenumber="730" filename="../../../main.c"/>
+   <Watchpoint expression="connCurrent" name="connCurrent" radix="-1" linenumber="105" filename="ProtokolSiam.c"/>
    <Watchpoint expression="g_ble_nus_c_SIAM" name="g_ble_nus_c_SIAM" radix="-1" linenumber="132" filename="ble_phy_handler.c"/>
-   <Watchpoint expression="addr_device" name="addr_device" radix="-1" linenumber="229" filename="ProtokolSiam.c"/>
+   <Watchpoint expression="addr_device" name="addr_device" radix="-1" linenumber="253" filename="ProtokolSiam.c"/>
    <Watchpoint expression="data" name="data" radix="-1" linenumber="130" filename="ble_phy_handler.c"/>
-   <Watchpoint expression="bleConnNumber" name="bleConnNumber" radix="-1" linenumber="910" filename="../../../main.c"/>
+   <Watchpoint expression="bleConnNumber" name="bleConnNumber" radix="-1" linenumber="934" filename="../../../main.c"/>
    <Watchpoint expression="len" name="len" radix="-1" linenumber="130" filename="ble_phy_handler.c"/>
    <Watchpoint expression="pr" name="pr" radix="-1" linenumber="0" filename="../ses"/>
    <Watchpoint expression="p_ble_nus_c" name="p_ble_nus_c" radix="-1" linenumber="317" filename="../../../../../../components/ble/ble_services/ble_nus_c/ble_nus_c.c"/>
-   <Watchpoint expression="p_ble_nus_evt" name="p_ble_nus_evt" radix="-1" linenumber="829" filename="../../../main.c"/>
+   <Watchpoint expression="p_ble_nus_evt" name="p_ble_nus_evt" radix="-1" linenumber="851" filename="../../../main.c"/>
+   <Watchpoint expression="buf" name="buf" radix="-1" linenumber="0" filename="../ses"/>
   </Watches>
  </Watch1>
  <Watch2>
@@ -89,14 +89,29 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="39" y="228" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/ble_phy_handler.h" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="204" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="112" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="ProtokolSiam.c" selected="0" top="72" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="131" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/Protokol.c" useBinaryEdit="0" left="0" path="ProtokolSiam.c" selected="0" top="102" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="9" y="15" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="ble_phy_handler.h" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="15" y="6" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/ble_phy_handler.c" useBinaryEdit="0" left="0" path="exchenge.h" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="1" y="72" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="Protokol.c" selected="0" top="37" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="106" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="Protokol.c" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="350" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/libuarte/nrf_libuarte_async.c" selected="0" top="330" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="332" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/timer/app_timer2.c" selected="0" top="312" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="185" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/timer/drv_rtc.c" selected="0" top="165" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="118" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp.h" selected="0" top="99" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="206" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="../../../../../../components/softdevice/s140/headers/ble_gap.h" selected="0" top="179" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="53" y="73" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/strerror/nrf_strerror.c" selected="0" top="35" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="375" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/hal/nrf_rtc.h" selected="0" top="357" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="99" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/util/app_error_weak.c" selected="0" top="80" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="3" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="main.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="10" y="39" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="4" y="123" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/hal/nrf_uarte.h" selected="0" top="103" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="uart.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="25" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/mem_device.c" useBinaryEdit="0" left="0" path="mem_config.c" selected="0" top="5" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="51" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="mem_application.h" selected="0" top="11" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="13" y="17" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/mem_config.c" useBinaryEdit="0" left="0" path="mem_commstruct.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="68" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/ProtokolSiam.c" useBinaryEdit="0" left="0" path="mem_device.c" selected="0" top="48" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="63" y="34" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/pca10056/s140/ses/mem_device.c" useBinaryEdit="0" left="0" path="ProtokolSiam.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="350" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/pwr_mgmt/nrf_pwr_mgmt.c" selected="0" top="332" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="24" y="239" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="216" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="58" y="101" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="../../../../../../components/boards/pca10056.h" selected="0" top="67" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="8" y="80" useTextEdit="1" openedFrom="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/examples/ble_app_uart_c_Jury/ble_app_uart_c/main.c" useBinaryEdit="0" left="0" path="../../../../../../modules/nrfx/hal/nrf_gpio.h" selected="0" top="60" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="ble_app_uart_c_pca10056_s140" fileDialogDefaultFilter="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/components/libraries/uart" debugSearchPath="" autoConnectCapabilities="3199"/>
+ <ARMCrossStudioWindow activeProject="ble_app_uart_c_pca10056_s140" fileDialogDefaultFilter="*.c;*.cpp;*.cxx;*.cc;*.h;*.hpp;*.hxx" autoConnectTarget="J-Link" buildConfiguration="Debug" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="C:/NordicCurrentSDK/nRF5SDK1702d674dde/nRF5_SDK_17.0.2_d674dde/components/libraries/uart" debugSearchPath="" autoConnectCapabilities="3711"/>
 </session>

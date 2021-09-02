@@ -219,6 +219,10 @@ void SysCtrl_Configurate(void) {
       	err_code = sd_nvic_SystemReset();
       	APP_ERROR_CHECK(err_code);
       break;
+    case ERASE:
+      //erase ALL saved devices
+      flash_erase(&fstorage_cfg, FLASH_DEECFG_START_ADDR);
+    break;
     }
     sSysCtrl.mStatus++;
     sSysCtrl.mCommand = 0;

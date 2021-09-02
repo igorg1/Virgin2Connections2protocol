@@ -1,6 +1,8 @@
 #ifndef MAIN_H__
 #define MAIN_H__
 
+#define USE_CUSTOM_BRD
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "nrf.h"
